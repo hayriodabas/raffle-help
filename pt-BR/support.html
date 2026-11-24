@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sorteio · Ajuda</title>
+<meta name="description" content="Como selar um sorteio, como conferir um e respostas para as dúvidas mais comuns.">
+<link rel="stylesheet" href="../raffle.css">
+</head>
+<body>
+<header class="masthead">
+  <p class="mark"><span class="seal" aria-hidden="true"></span>Sorteio</p>
+  <h1>Ajuda</h1>
+  <p class="lede">Como selar um sorteio, como conferir um e respostas para as dúvidas mais comuns.</p>
+  <nav class="tabs"><a href="support.html" aria-current="page">Ajuda</a> <a href="privacy.html">Privacidade</a></nav>
+</header>
+<main>
+<p class="intro">O Sorteio sorteia números de um intervalo e nomes de uma lista, embaralha uma lista numa ordem e a divide em times.
+O que ele acrescenta a um sorteio comum é o <strong>sorteio selado</strong>: você sela o sorteio antes de ele acontecer e, depois,
+qualquer pessoa pode conferir que o resultado não foi escolhido à mão. Tudo funciona off-line e sem conta.</p>
+
+<h2 id="sealed">Um sorteio selado, em quatro passos</h2>
+<p>Abaixo do botão Sortear, <strong>Selar este sorteio</strong> fixa o intervalo ou a lista e as regras (ganhadores e suplentes por
+rodada, ou o número de times) e mostra um <strong>selo</strong> de doze caracteres, como <code>K7QF-2M9X-TR4B</code>.
+Selar e conferir são grátis.</p>
+<ol class="steps">
+  <li><strong>Mostre o selo primeiro.</strong> Leia-o em voz alta, levante o celular ou toque em <strong>Enviar o selo</strong>. Nada foi
+      sorteado ainda.</li>
+  <li><strong>Peça uma palavra à plateia.</strong> Peça a outra pessoa uma palavra ou um número qualquer, digite em
+      <strong>Palavra da plateia</strong> e toque em <strong>Usar esta palavra</strong>. Ela é misturada ao sorteio. Você pode sortear sem
+      palavra, mas aí o certificado mostra menos (veja abaixo).</li>
+  <li><strong>Sorteie.</strong> O resultado fica marcado com um pequeno selo. <strong>Certificado</strong> abre o registro do sorteio;
+      <strong>Enviar o certificado</strong> o compartilha como texto simples.</li>
+  <li><strong>Qualquer pessoa confere.</strong> No Sorteio, abra o menu (no alto, à direita) ou os Ajustes e escolha <strong>Conferir um sorteio</strong>,
+      depois cole o certificado e toque em <strong>Conferir</strong>. O app calcula o selo e o resultado de novo e responde
+      <strong>Confere</strong> ou <strong>Não confere</strong>. O último passo é seu: compare o selo com o que foi mostrado
+      a você antes do sorteio.</li>
+</ol>
+<p>Enquanto um sorteio está selado, a lista, o intervalo e as regras não podem ser alterados; editar pede confirmação antes e tira o selo.
+Números e nomes são sorteados rodada após rodada sob um mesmo selo; uma ordem selada e times selados são sorteados uma única vez.
+<strong>Pular quem já ganhou</strong> não vale para um sorteio selado: o conjunto dele é exatamente o que o selo cobre.</p>
+
+<h3>O que um certificado prova e o que ele não pode provar</h3>
+<p>Se o selo foi mostrado <em>antes</em> de a palavra ser escolhida, e a palavra foi escolhida por alguém que não o organizador, ninguém poderia
+conhecer ou direcionar o resultado: o organizador não sabia a palavra ao selar, e os outros não sabiam a chave. Sem palavra,
+um certificado só mostra que a lista, as regras e o resultado não foram alterados depois de selar. O Sorteio não consegue saber quem escolheu a
+palavra nem quando o selo foi mostrado; as pessoas presentes sabem.</p>
+<p>Um certificado contém a lista inteira da qual o sorteio foi feito. Envie-o só para quem pode ver esses nomes.</p>
+
+<h3 id="recipe">Conferindo à mão: a receita</h3>
+<p>Um certificado traz tudo o que é preciso: a chave (32 dígitos hexadecimais), a palavra, as regras e o intervalo ou cada item.
+Versão 1 da receita:</p>
+<ul class="recipe">
+  <li><strong>Selo:</strong> SHA-256 sobre estas linhas unidas por quebras de linha: <code>raffle-seal-v1</code>, a chave, o tipo
+      (<code>numbers</code>, <code>names</code>, <code>order</code>, <code>teams</code>), <code>winners=W</code>,
+      <code>reserves=R</code>, <code>teams=T</code>, depois <code>range=A..B</code> ou uma linha por item:
+      bilhetes, uma tabulação, o nome. Cada um dos doze primeiros bytes <em>b</em> vira o caractere na posição <em>b</em> mod 32 de
+      <code>ABCDEFGHJKLMNPQRSTUVWXYZ23456789</code>.</li>
+  <li><strong>Valores aleatórios:</strong> o bloco <em>i</em> da rodada <em>r</em> (ambos a partir de 0) é HMAC-SHA256 com os bytes da chave sobre
+      <code>raffle-draw-v1</code>, a palavra, <em>r</em> e <em>i</em>, unidos por quebras de linha; cada bloco é dividido em quatro
+      valores de 64 bits em big-endian. Um índice menor que <em>n</em>: pegue o próximo valor <em>v</em>; se <em>v</em> for menor que
+      2<sup>64</sup> mod <em>n</em>, pegue outro; caso contrário, o índice é <em>v</em> mod <em>n</em>.</li>
+  <li><strong>Números:</strong> liste em ordem crescente os números ainda não sorteados; para a retirada <em>i</em> (a partir de 0) troque a posição
+      <em>i</em> com a posição <em>i</em> + índice(menor que o que sobra a partir de <em>i</em>); os números sorteados são as primeiras posições.
+      Intervalos com mais de 200.000 números: limite inferior + índice(menor que a quantidade), repetido se já tiver sido sorteado.</li>
+  <li><strong>Nomes:</strong> um índice de bilhete menor que os bilhetes ainda em jogo; percorra a lista subtraindo os bilhetes de cada item
+      até o índice caber; esse item sai com todos os seus bilhetes.</li>
+  <li><strong>Ordem:</strong> as mesmas trocas dos números, sobre a lista inteira. <strong>Times:</strong> essa ordem distribuída
+      em rodízio entre os times.</li>
+</ul>
+
+<h2 id="everyday">Sorteios do dia a dia</h2>
+<ul>
+  <li><strong>Números:</strong> toque no intervalo (de 1 a 100 no início) para mudá-lo e depois toque em <strong>Sortear</strong>.
+      Cada número sai só uma vez até você tocar em <strong>Novo sorteio</strong>.</li>
+  <li><strong>Nomes:</strong> escolha <strong>Nomes</strong> entre as opções sob o título, toque em <strong>Adicionar nomes</strong> e digite
+      ou cole um nome por linha. Numerações como “1.” ou “2)” e traços vindos de uma conversa são removidos, e um nome que aparece
+      duas vezes conta uma só. Toque em <strong>OK</strong> e depois em <strong>Sortear</strong>.</li>
+  <li><strong>Ordem</strong> põe a lista inteira numa ordem aleatória, do primeiro ao último. <strong>Times</strong> divide a lista em
+      dois a vinte times de tamanho igual; defina o número abaixo do botão Sortear.</li>
+  <li><strong>Mostrar para a sala</strong> (as setas no alto, à direita) coloca o resultado em tela cheia sobre fundo escuro, com Sortear na
+      parte de baixo para o próximo.</li>
+  <li>Tudo o que foi sorteado até agora fica na tela, em ordem, até você começar um novo sorteio. Cada resultado tem a data, a hora e um
+      <strong>código do sorteio</strong> de seis letras calculado a partir da hora e do conteúdo: dois cartões com o mesmo código mostram o mesmo
+      sorteio, e um cartão cuja lista foi editada depois deixa de bater.</li>
+</ul>
+
+<h3>Bilhetes: mais chances para um nome</h3>
+<p>Na lista de nomes, termine uma linha com <code>x3</code> (depois de um espaço) para dar a esse nome três bilhetes num sorteio de nomes, de 2 a
+99. Um nome com mais bilhetes tem mais chance de sair, e mesmo assim sai uma única vez. Ordem, Times e Amigo secreto contam
+todo mundo uma vez.</p>
+
+<h3 id="pairs">Amigo secreto</h3>
+<p>Com o Sorteio Pro, escolha <strong>Amigo secreto</strong> e toque em <strong>Sortear os pares</strong>: cada pessoa da lista tira outra
+pessoa, e ninguém tira a si mesmo. Depois passe o celular de mão em mão. Cada pessoa toca no próprio nome, toca em <strong>Ver meu par</strong>,
+lê e esconde de novo antes de passar o celular adiante. A lista mostra quem já olhou. O organizador pode abrir todos os pares pelo
+menu (o app avisa antes) ou sortear de novo. Os pares ficam no celular até um novo sorteio substituí-los e nunca entram no
+histórico.</p>
+<p>Antes de sortear, <strong>Separar duas pessoas</strong> acrescenta uma regra para duas pessoas nunca se tirarem, em nenhum dos dois sentidos:
+casais, irmãos, o par do ano passado. Se as regras não deixarem nenhum jeito de formar pares com todos, o app avisa e pede que você remova uma.</p>
+
+<h2 id="questions">Perguntas</h2>
+
+<h3>O sorteio é mesmo aleatório?</h3>
+<p>Um sorteio comum usa o gerador de números aleatórios criptograficamente seguro do sistema, no seu aparelho, de modo que cada número ou nome
+ainda no sorteio tem exatamente a mesma chance. Um sorteio selado tira seus valores da receita acima: uma chave feita por esse mesmo
+gerador, misturada com a palavra da plateia. O app nunca usa a hora, seus toques nem qualquer outra coisa para escolher.</p>
+
+<h3>Posso desligar a animação da gaiola ou os sons?</h3>
+<p>Pode: em <strong>Ajustes</strong> (a engrenagem, no alto à esquerda) desligue a animação ou <strong>Som e vibração</strong>. O
+botão da animação também está nas opções abaixo do botão Sortear. Com Reduzir Movimento ligado, os resultados aparecem de uma vez,
+e o botão de silencioso sempre vale mais que os sons.</p>
+
+<h3>O que são suplentes?</h3>
+<p>Com o Sorteio Pro, um só toque pode sortear vários ganhadores e depois suplentes, todos diferentes. Se um ganhador não puder
+participar, os suplentes entram no lugar, na ordem em que foram sorteados.</p>
+
+<h3>O que faz “Pular quem já ganhou”?</h3>
+<p>Quem ganhou um sorteio anterior da mesma lista salva, ou do mesmo intervalo de números, fica de fora do próximo
+sorteio. Suplentes não contam como ganhadores, e uma lista que não foi salva nunca é comparada com outras listas.
+Quando todos já ganharam, o app avisa e oferece incluir de novo quem já ganhou.</p>
+
+<h3>O que é a cartela de números?</h3>
+<p>Uma grade de 10 a 1000 números (começando em 1 ou em 00). Toque num número para anotar quem está com ele; toque em
+<strong>Sortear entre os reservados</strong> para sortear um ganhador. Um número já sorteado não participa de novo,
+então você pode sortear vários números em sequência. Apagar o histórico não muda a cartela. A cartela é só um registro:
+o app não tem prêmios, não lida com dinheiro e não concede prêmios. Se houver prêmios, siga a lei do seu país.</p>
+
+<h3>O que é grátis, e o que é o Sorteio Pro?</h3>
+<p>Grátis: sorteios de números de qualquer intervalo, sorteios de nomes de uma lista (com bilhetes), ordem, times, sorteios selados com o respectivo
+certificado, conferência de qualquer certificado, a gaiola, a tela para a sala e o sorteio até agora.
+O <strong>Sorteio Pro</strong> (um único pagamento, sem assinatura) acrescenta vários ganhadores e suplentes com um toque, pular quem já
+ganhou, listas salvas, amigo secreto, a cartela de números, o histórico com data, hora e código, e o compartilhamento de resultados como imagem ou
+PDF (a cartela como imagem). Opções que precisam do Pro mostram uma marca PRO; as abas Cartela e Histórico mostram um exemplo e um botão Sorteio Pro
+até lá.</p>
+
+<h3>Eu paguei, mas continua bloqueado</h3>
+<p>Abra os <strong>Ajustes</strong> (a engrenagem, no alto à esquerda) e toque em <strong>Restaurar compra</strong>, com a sessão iniciada na
+conta Apple com que você comprou.</p>
+
+<h3>Posso pedir reembolso?</h3>
+<p>Os reembolsos são tratados pela Apple: <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>.</p>
+
+<h3>Que dados o Sorteio coleta?</h3>
+<p>Nenhum. A <a href="privacy.html">página de privacidade</a> lista o que fica no seu aparelho e os poucos momentos em que o app se conecta à internet.</p>
+
+<h2 id="contact">Contato</h2>
+<p>Escreva para <a href="mailto:hayriodabas@gmail.com">hayriodabas@gmail.com</a> com o modelo do seu aparelho e o que você estava fazendo.</p>
+</main>
+<footer>
+  <p class="langs"><span>Outros idiomas:</span> <a href="../en-US/support.html" lang="en">English</a> <a href="../de-DE/support.html" lang="de">Deutsch</a> <a href="../fr-FR/support.html" lang="fr">Français</a> <a href="../es-ES/support.html" lang="es">Español</a> <a href="../it/support.html" lang="it">Italiano</a> <a href="../nl-NL/support.html" lang="nl">Nederlands</a> <a href="../ja/support.html" lang="ja">日本語</a> <a href="../ko/support.html" lang="ko">한국어</a> <a href="../zh-Hans/support.html" lang="zh-Hans">简体中文</a> <a href="../ru/support.html" lang="ru">Русский</a> <a href="../tr/support.html" lang="tr">Türkçe</a></p>
+  <p class="stamp">Atualizado em 24 de novembro de 2026 · Sorteio de Números e Rifa · app.klarwerk.raffle</p>
+</footer>
+</body>
+</html>

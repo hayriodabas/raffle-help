@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loting · Help</title>
+<meta name="description" content="Hoe je een trekking verzegelt, hoe je er een controleert en antwoorden op veelgestelde vragen.">
+<link rel="stylesheet" href="../raffle.css">
+</head>
+<body>
+<header class="masthead">
+  <p class="mark"><span class="seal" aria-hidden="true"></span>Loting</p>
+  <h1>Help</h1>
+  <p class="lede">Hoe je een trekking verzegelt, hoe je er een controleert en antwoorden op veelgestelde vragen.</p>
+  <nav class="tabs"><a href="support.html" aria-current="page">Help</a> <a href="privacy.html">Privacy</a></nav>
+</header>
+<main>
+<p class="intro">Loting trekt nummers uit een bereik en namen uit een lijst, schudt een lijst tot een volgorde en verdeelt hem over teams.
+Wat het toevoegt aan een gewone trekking is de <strong>verzegelde trekking</strong>: je verzegelt de trekking voordat hij plaatsvindt, en daarna
+kan iedereen controleren dat de uitslag niet met de hand is gekozen. Alles werkt offline en zonder account.</p>
+
+<h2 id="sealed">Een verzegelde trekking, in vier stappen</h2>
+<p>Onder de knop Trekken legt <strong>Deze trekking verzegelen</strong> het bereik of de lijst en de regels vast (winnaars en reserves per
+ronde, of het aantal teams) en toont een <strong>zegel</strong> van twaalf tekens, zoals <code>K7QF-2M9X-TR4B</code>.
+Verzegelen en controleren zijn gratis.</p>
+<ol class="steps">
+  <li><strong>Toon eerst het zegel.</strong> Lees het voor, hou de telefoon omhoog of tik op <strong>Zegel versturen</strong>. Er is nog niets
+      getrokken.</li>
+  <li><strong>Vraag een woord uit de zaal.</strong> Vraag iemand anders om een willekeurig woord of getal, typ het onder
+      <strong>Woord uit de zaal</strong> en tik op <strong>Dit woord gebruiken</strong>. Het wordt door de trekking gemengd. Je kunt ook zonder
+      woord trekken, maar dan laat het certificaat minder zien (zie hieronder).</li>
+  <li><strong>Trek.</strong> De uitslag krijgt een klein zegel. <strong>Certificaat</strong> opent het verslag van de trekking;
+      <strong>Certificaat versturen</strong> deelt het als platte tekst.</li>
+  <li><strong>Iedereen controleert.</strong> Open in Loting het menu (rechtsboven) of de Instellingen en kies <strong>Trekking controleren</strong>,
+      plak dan het certificaat en tik op <strong>Controleren</strong>. De app rekent het zegel en de uitslag opnieuw uit en antwoordt
+      <strong>Het klopt</strong> of <strong>Het klopt niet</strong>. De laatste stap is aan jou: vergelijk het zegel met het zegel dat je
+      voor de trekking te zien kreeg.</li>
+</ol>
+<p>Zolang een trekking verzegeld is, kunnen de lijst, het bereik en de regels niet worden gewijzigd; bewerken vraagt eerst om bevestiging en haalt het zegel weg.
+Nummers en namen worden ronde na ronde onder één zegel getrokken; een verzegelde volgorde en verzegelde teams worden één keer getrokken.
+<strong>Eerdere winnaars overslaan</strong> geldt niet voor een verzegelde trekking: de pot is precies wat het zegel dekt.</p>
+
+<h3>Wat een certificaat bewijst, en wat niet</h3>
+<p>Als het zegel is getoond <em>voordat</em> het woord werd gekozen, en iemand anders dan de organisator het woord koos, kon niemand
+de uitslag kennen of sturen: de organisator kende het woord niet bij het verzegelen, en de anderen kenden de sleutel niet. Zonder woord
+laat een certificaat alleen zien dat de lijst, de regels en de uitslag na het verzegelen niet zijn gewijzigd. Loting kan niet weten wie het
+woord koos of wanneer het zegel werd getoond; de aanwezigen weten dat wel.</p>
+<p>Een certificaat bevat de hele lijst waaruit is getrokken. Stuur het alleen naar mensen die die namen mogen zien.</p>
+
+<h3 id="recipe">Met de hand controleren: het recept</h3>
+<p>Een certificaat bevat alles wat nodig is: de sleutel (32 hexadecimale cijfers), het woord, de regels en het bereik of elke invoer.
+Versie 1 van het recept:</p>
+<ul class="recipe">
+  <li><strong>Zegel:</strong> SHA-256 over deze regels, aan elkaar gezet met regelinvoegingen: <code>raffle-seal-v1</code>, de sleutel, het soort
+      (<code>numbers</code>, <code>names</code>, <code>order</code>, <code>teams</code>), <code>winners=W</code>,
+      <code>reserves=R</code>, <code>teams=T</code>, dan <code>range=A..B</code> of één regel per invoer:
+      loten, een tab, de naam. Elk van de eerste twaalf bytes <em>b</em> wordt het teken op positie <em>b</em> mod 32 van
+      <code>ABCDEFGHJKLMNPQRSTUVWXYZ23456789</code>.</li>
+  <li><strong>Willekeurige waarden:</strong> blok <em>i</em> van ronde <em>r</em> (beide vanaf 0) is HMAC-SHA256 met de sleutelbytes over
+      <code>raffle-draw-v1</code>, het woord, <em>r</em> en <em>i</em>, aan elkaar gezet met regelinvoegingen; elk blok wordt in vier
+      big-endian 64-bitwaarden gesneden. Een index kleiner dan <em>n</em>: neem de volgende waarde <em>v</em>; is <em>v</em> kleiner dan
+      2<sup>64</sup> mod <em>n</em>, neem er dan nog een; anders is de index <em>v</em> mod <em>n</em>.</li>
+  <li><strong>Nummers:</strong> zet de nog niet getrokken nummers oplopend op een rij; verwissel voor trekking <em>i</em> (vanaf 0) positie
+      <em>i</em> met positie <em>i</em> + index(kleiner dan wat er vanaf <em>i</em> over is); de getrokken nummers zijn de eerste posities.
+      Bereiken van meer dan 200.000 nummers: ondergrens + index(kleiner dan het aantal), opnieuw genomen als het al getrokken is.</li>
+  <li><strong>Namen:</strong> een lotindex kleiner dan de loten die nog meedoen; loop de lijst langs en trek van elke invoer de loten af
+      tot de index past; die invoer komt eruit met al zijn loten.</li>
+  <li><strong>Volgorde:</strong> dezelfde verwisselingen als bij de nummers over de hele lijst. <strong>Teams:</strong> die volgorde, om de
+      beurt over de teams verdeeld.</li>
+</ul>
+
+<h2 id="everyday">Dagelijkse trekkingen</h2>
+<ul>
+  <li><strong>Nummers:</strong> tik op het bereik (eerst 1 – 100) om het te wijzigen en tik dan op <strong>Trekken</strong>.
+      Elk nummer komt maar één keer uit tot je op <strong>Opnieuw</strong> tikt.</li>
+  <li><strong>Namen:</strong> kies <strong>Namen</strong> bij de chips onder de titel, tik op <strong>Namen toevoegen</strong> en typ
+      of plak één naam per regel. Nummering zoals “1.” of “2)” en streepjes uit een chat worden verwijderd, en een naam die
+      twee keer voorkomt telt één keer. Tik op <strong>Gereed</strong> en dan op <strong>Trekken</strong>.</li>
+  <li><strong>Volgorde</strong> zet de hele lijst in een willekeurige volgorde, van eerste tot laatste. <strong>Teams</strong> verdeelt de lijst over
+      twee tot twintig teams van gelijke grootte; stel het aantal in onder de knop Trekken.</li>
+  <li><strong>Groot tonen</strong> (de pijlen rechtsboven) zet de uitslag schermvullend op een donkere achtergrond, met Trekken onderaan
+      voor de volgende.</li>
+  <li>Alles wat tot nu toe is getrokken blijft in volgorde op het scherm staan tot je een nieuwe trekking begint. Elke uitslag heeft zijn datum, zijn tijd en een
+      <strong>trekkingscode</strong> van zes letters, berekend uit de tijd en de inhoud: twee kaarten met dezelfde code tonen dezelfde
+      trekking, en een kaart waarvan de lijst achteraf is bewerkt komt niet meer overeen.</li>
+</ul>
+
+<h3>Loten: meer kans voor één naam</h3>
+<p>Eindig in de namenlijst een regel met <code>x3</code> (na een spatie) om die naam in een namentrekking drie loten te geven, van 2 tot
+99. Een naam met meer loten heeft meer kans om eruit te komen, en komt er toch maar één keer uit. Volgorde, Teams en Lootjes tellen
+iedereen één keer.</p>
+
+<h3 id="pairs">Lootjes</h3>
+<p>Kies met Loting Pro <strong>Lootjes</strong> en tik op <strong>Lootjes trekken</strong>: iedereen op de lijst trekt iemand
+anders, en niemand trekt zichzelf. Geef de telefoon daarna rond. Iedereen tikt op de eigen naam, tikt op <strong>Mijn lootje tonen</strong>,
+leest het en verbergt het weer voordat de telefoon wordt doorgegeven. De lijst laat zien wie al gekeken heeft. De organisator kan elk paar openen via
+het menu (de app waarschuwt eerst) of opnieuw trekken. De paren blijven op de telefoon tot een nieuwe trekking ze vervangt en komen nooit in de
+geschiedenis.</p>
+<p>Voor het trekken voegt <strong>Twee mensen uit elkaar houden</strong> een regel toe dat twee mensen elkaar nooit trekken, in geen van beide richtingen:
+partners, broers en zussen, de loot van vorig jaar. Als de regels geen enkele manier overlaten om iedereen te koppelen, zegt de app dat en vraagt hij je er één te verwijderen.</p>
+
+<h2 id="questions">Vragen</h2>
+
+<h3>Is de trekking echt willekeurig?</h3>
+<p>Een gewone trekking gebruikt de cryptografisch veilige willekeurige-getallengenerator van het systeem, op je apparaat, zodat elk nummer of elke naam
+die nog meedoet precies dezelfde kans heeft. Een verzegelde trekking haalt zijn waarden uit het recept hierboven: een sleutel gemaakt door diezelfde
+generator, gemengd met het woord uit de zaal. De app gebruikt nooit de tijd, je tikken of iets anders om te kiezen.</p>
+
+<h3>Kan ik de kooi-animatie of de geluiden uitzetten?</h3>
+<p>Ja: zet in <strong>Instellingen</strong> (het tandwiel, linksboven) de animatie of <strong>Geluid en trillingen</strong> uit. De
+schakelaar voor de animatie staat ook bij de opties onder de knop Trekken. Met Beperk beweging aan verschijnen uitslagen meteen,
+en de stilteschakelaar wint altijd van de geluiden.</p>
+
+<h3>Wat zijn reserves?</h3>
+<p>Met Loting Pro kun je met één tik meerdere winnaars trekken en daarna reserves, allemaal verschillend. Als een winnaar niet kan
+meedoen, nemen de reserves het over, in de volgorde waarin ze zijn getrokken.</p>
+
+<h3>Wat doet “Eerdere winnaars overslaan”?</h3>
+<p>Wie een eerdere trekking uit dezelfde bewaarde lijst of hetzelfde nummerbereik won, blijft buiten de volgende
+trekking. Reserves tellen niet als winnaars, en een lijst die niet is bewaard wordt nooit met andere lijsten vergeleken.
+Als iedereen al gewonnen heeft, zegt de app dat en biedt hij aan eerdere winnaars weer mee te laten doen.</p>
+
+<h3>Wat is het nummerbord?</h3>
+<p>Een raster van 10 tot 1000 nummers (beginnend bij 1 of bij 00). Tik op een nummer om te noteren wie het heeft; tik op
+<strong>Trekken uit bezette nummers</strong> om een winnaar te trekken. Een nummer dat getrokken is doet niet opnieuw mee,
+zodat je achter elkaar meerdere nummers kunt trekken. Het wissen van de geschiedenis verandert het bord niet. Het bord is alleen een overzicht:
+de app heeft geen prijzen, verwerkt geen geld en kent geen prijzen toe. Als er prijzen zijn, volg dan de wet van je land.</p>
+
+<h3>Wat is gratis, en wat is Loting Pro?</h3>
+<p>Gratis: nummertrekkingen uit elk bereik, namentrekkingen uit een lijst (met loten), volgorde, teams, verzegelde trekkingen met hun
+certificaat, het controleren van elk certificaat, de kooi, de zaalweergave en de trekking tot nu toe.
+<strong>Loting Pro</strong> (één betaling, geen abonnement) voegt meerdere winnaars en reserves met één tik toe, het overslaan van eerdere
+winnaars, bewaarde lijsten, lootjes, het nummerbord, de geschiedenis met datum, tijd en code, en het delen van uitslagen als afbeelding of
+pdf (het bord als afbeelding). Opties die Pro nodig hebben tonen een PRO-label; de tabbladen Bord en Geschiedenis tonen tot dan een voorbeeld en een knop Loting Pro.</p>
+
+<h3>Ik heb betaald, maar het is nog steeds vergrendeld</h3>
+<p>Open <strong>Instellingen</strong> (het tandwiel, linksboven) en tik op <strong>Aankoop herstellen</strong>, ingelogd met het
+Apple-account waarmee je hebt gekocht.</p>
+
+<h3>Kan ik mijn geld terugkrijgen?</h3>
+<p>Terugbetalingen worden door Apple afgehandeld: <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>.</p>
+
+<h3>Welke gegevens verzamelt Loting?</h3>
+<p>Geen. De <a href="privacy.html">privacypagina</a> somt op wat op je apparaat blijft en de enkele momenten waarop de app online gaat.</p>
+
+<h2 id="contact">Contact</h2>
+<p>Schrijf naar <a href="mailto:hayriodabas@gmail.com">hayriodabas@gmail.com</a> met je apparaatmodel en wat je aan het doen was.</p>
+</main>
+<footer>
+  <p class="langs"><span>Andere talen:</span> <a href="../en-US/support.html" lang="en">English</a> <a href="../de-DE/support.html" lang="de">Deutsch</a> <a href="../fr-FR/support.html" lang="fr">Français</a> <a href="../es-ES/support.html" lang="es">Español</a> <a href="../it/support.html" lang="it">Italiano</a> <a href="../pt-BR/support.html" lang="pt-BR">Português (Brasil)</a> <a href="../ja/support.html" lang="ja">日本語</a> <a href="../ko/support.html" lang="ko">한국어</a> <a href="../zh-Hans/support.html" lang="zh-Hans">简体中文</a> <a href="../ru/support.html" lang="ru">Русский</a> <a href="../tr/support.html" lang="tr">Türkçe</a></p>
+  <p class="stamp">Bijgewerkt op 24 november 2026 · Loting: Nummers en Namen · app.klarwerk.raffle</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tirage · Aide</title>
+<meta name="description" content="Comment sceller un tirage, comment en vérifier un, et des réponses aux questions courantes.">
+<link rel="stylesheet" href="../raffle.css">
+</head>
+<body>
+<header class="masthead">
+  <p class="mark"><span class="seal" aria-hidden="true"></span>Tirage</p>
+  <h1>Aide</h1>
+  <p class="lede">Comment sceller un tirage, comment en vérifier un, et des réponses aux questions courantes.</p>
+  <nav class="tabs"><a href="support.html" aria-current="page">Aide</a> <a href="privacy.html">Confidentialité</a></nav>
+</header>
+<main>
+<p class="intro">Tirage permet de tirer des numéros dans une plage et des noms dans une liste, de mélanger une liste pour en faire un ordre et de la répartir en équipes.
+Ce qu’il ajoute à un tirage ordinaire, c’est le <strong>tirage scellé</strong> : vous scellez le tirage avant qu’il n’ait lieu, et ensuite
+n’importe qui peut vérifier que le résultat n’a pas été choisi à la main. Tout fonctionne hors ligne et sans compte.</p>
+
+<h2 id="sealed">Un tirage scellé, en quatre étapes</h2>
+<p>Sous le bouton Tirer, <strong>Sceller ce tirage</strong> fige la plage ou la liste et les règles (gagnants et suppléants par
+tour, ou nombre d’équipes) et affiche un <strong>sceau</strong> de douze caractères, par exemple <code>K7QF-2M9X-TR4B</code>.
+Sceller et vérifier sont gratuits.</p>
+<ol class="steps">
+  <li><strong>Montrez d’abord le sceau.</strong> Lisez-le à voix haute, levez le téléphone ou touchez <strong>Envoyer le sceau</strong>. Rien n’a encore
+      été tiré.</li>
+  <li><strong>Prenez un mot du public.</strong> Demandez à quelqu’un d’autre un mot ou un nombre au hasard, saisissez-le sous
+      <strong>Mot du public</strong> et touchez <strong>Utiliser ce mot</strong>. Il est mélangé au tirage. Vous pouvez tirer sans
+      mot, mais le certificat montre alors moins de choses (voir plus bas).</li>
+  <li><strong>Tirez.</strong> Le résultat est marqué d’un petit sceau. <strong>Certificat</strong> ouvre le compte rendu du tirage ;
+      <strong>Envoyer le certificat</strong> le partage en texte brut.</li>
+  <li><strong>Chacun vérifie.</strong> Dans Tirage, ouvrez le menu (en haut à droite) ou les Réglages et choisissez <strong>Vérifier un tirage</strong>,
+      puis collez le certificat et touchez <strong>Vérifier</strong>. L’app recalcule le sceau et le résultat et répond
+      <strong>Tout concorde</strong> ou <strong>Cela ne concorde pas</strong>. La dernière étape vous revient : comparez le sceau avec celui qu’on vous
+      a montré avant le tirage.</li>
+</ol>
+<p>Tant qu’un tirage est scellé, la liste, la plage et les règles ne peuvent pas être modifiées ; modifier demande d’abord confirmation et retire le sceau.
+Les numéros et les noms sont tirés tour après tour sous un même sceau ; un ordre scellé et des équipes scellées sont tirés une seule fois.
+<strong>Exclure les anciens gagnants</strong> ne s’applique pas à un tirage scellé : son ensemble est exactement ce que couvre le sceau.</p>
+
+<h3>Ce qu’un certificat prouve, et ce qu’il ne peut pas prouver</h3>
+<p>Si le sceau a été montré <em>avant</em> que le mot ne soit choisi, et si quelqu’un d’autre que l’organisateur a choisi le mot, personne ne pouvait
+connaître ou orienter le résultat : l’organisateur ne connaissait pas le mot au moment de sceller, et les autres ne connaissaient pas la clé. Sans mot,
+un certificat montre seulement que la liste, les règles et le résultat n’ont pas été modifiés après le scellement. Tirage ne peut pas savoir qui a choisi le
+mot ni quand le sceau a été montré ; les personnes présentes, elles, le savent.</p>
+<p>Un certificat contient toute la liste dans laquelle le tirage a eu lieu. Ne l’envoyez qu’aux personnes qui ont le droit de voir ces noms.</p>
+
+<h3 id="recipe">Vérifier à la main : la recette</h3>
+<p>Un certificat contient tout le nécessaire : la clé (32 chiffres hexadécimaux), le mot, les règles, et la plage ou chaque entrée.
+Version 1 de la recette :</p>
+<ul class="recipe">
+  <li><strong>Sceau :</strong> SHA-256 sur ces lignes jointes par des sauts de ligne : <code>raffle-seal-v1</code>, la clé, le type
+      (<code>numbers</code>, <code>names</code>, <code>order</code>, <code>teams</code>), <code>winners=W</code>,
+      <code>reserves=R</code>, <code>teams=T</code>, puis <code>range=A..B</code> ou une ligne par entrée :
+      les tickets, une tabulation, le nom. Chacun des douze premiers octets <em>b</em> devient le caractère situé à la position <em>b</em> mod 32 de
+      <code>ABCDEFGHJKLMNPQRSTUVWXYZ23456789</code>.</li>
+  <li><strong>Valeurs aléatoires :</strong> le bloc <em>i</em> du tour <em>r</em> (tous deux à partir de 0) est un HMAC-SHA256 avec les octets de la clé sur
+      <code>raffle-draw-v1</code>, le mot, <em>r</em> et <em>i</em>, joints par des sauts de ligne ; chaque bloc est découpé en quatre
+      valeurs de 64 bits en big-endian. Un indice inférieur à <em>n</em> : prenez la valeur suivante <em>v</em> ; si <em>v</em> est inférieure à
+      2<sup>64</sup> mod <em>n</em>, prenez-en une autre ; sinon l’indice est <em>v</em> mod <em>n</em>.</li>
+  <li><strong>Numéros :</strong> listez dans l’ordre croissant les numéros pas encore tirés ; pour le tirage <em>i</em> (à partir de 0), échangez la position
+      <em>i</em> avec la position <em>i</em> + indice(inférieur à ce qui reste à partir de <em>i</em>) ; les numéros tirés sont les premières positions.
+      Plages de plus de 200 000 numéros : borne inférieure + indice(inférieur au nombre de numéros), repris s’il a déjà été tiré.</li>
+  <li><strong>Noms :</strong> un indice de ticket inférieur au nombre de tickets encore en jeu ; parcourez la liste en retranchant les tickets de chaque entrée
+      jusqu’à ce que l’indice y tienne ; cette entrée sort avec tous ses tickets.</li>
+  <li><strong>Ordre :</strong> les mêmes échanges que pour les numéros, sur toute la liste. <strong>Équipes :</strong> cet ordre distribué
+      à tour de rôle dans les équipes.</li>
+</ul>
+
+<h2 id="everyday">Tirages du quotidien</h2>
+<ul>
+  <li><strong>Numéros :</strong> touchez la plage (1 – 100 au départ) pour la modifier, puis touchez <strong>Tirer</strong>.
+      Chaque numéro ne sort qu’une fois jusqu’à ce que vous touchiez <strong>Nouveau tirage</strong>.</li>
+  <li><strong>Noms :</strong> choisissez <strong>Noms</strong> parmi les pastilles sous le titre, touchez <strong>Ajouter des noms</strong> et saisissez
+      ou collez un nom par ligne. Les numérotations comme « 1. » ou « 2) » et les tirets venant d’une discussion sont retirés, et un nom qui apparaît
+      deux fois ne compte qu’une fois. Touchez <strong>OK</strong>, puis <strong>Tirer</strong>.</li>
+  <li><strong>Ordre</strong> met toute la liste dans un ordre aléatoire, du premier au dernier. <strong>Équipes</strong> répartit la liste en
+      deux à vingt équipes de taille égale ; réglez le nombre sous le bouton Tirer.</li>
+  <li><strong>Afficher pour la salle</strong> (les flèches en haut à droite) affiche le résultat en plein écran sur fond sombre, avec Tirer en
+      bas pour le suivant.</li>
+  <li>Tout ce qui a été tiré jusque-là reste à l’écran, dans l’ordre, jusqu’à ce que vous commenciez un nouveau tirage. Chaque résultat porte sa date, son heure et un
+      <strong>code de tirage</strong> de six lettres calculé à partir de l’heure et du contenu : deux cartes avec le même code montrent le même
+      tirage, et une carte dont la liste a été modifiée ensuite ne correspond plus.</li>
+</ul>
+
+<h3>Tickets : plus de chances pour un nom</h3>
+<p>Dans la liste de noms, terminez une ligne par <code>x3</code> (après une espace) pour donner trois tickets à ce nom dans un tirage de noms, de 2 à
+99. Un nom qui a plus de tickets a plus de chances de sortir, mais ne sort toujours qu’une fois. Ordre, Équipes et Père Noël secret comptent
+chacun une seule fois.</p>
+
+<h3 id="pairs">Père Noël secret</h3>
+<p>Avec Tirage Pro, choisissez <strong>Père Noël secret</strong> et touchez <strong>Tirer les paires</strong> : chaque personne de la liste tire quelqu’un
+d’autre, et personne ne se tire soi-même. Faites ensuite circuler le téléphone. Chacun touche son propre nom, touche <strong>Voir mon tirage</strong>,
+le lit, puis le masque de nouveau avant de passer le téléphone. La liste indique qui a déjà regardé. L’organisateur peut ouvrir chaque paire depuis
+le menu (l’app prévient d’abord) ou refaire le tirage. Les paires restent sur le téléphone jusqu’à ce qu’un nouveau tirage les remplace et n’entrent jamais dans
+l’historique.</p>
+<p>Avant de tirer, <strong>Séparer deux personnes</strong> ajoute une règle selon laquelle deux personnes ne se tirent jamais l’une l’autre, dans aucun sens :
+conjoints, frères et sœurs, la paire de l’an dernier. Si les règles ne laissent aucun moyen de former les paires, l’app vous le dit et vous demande d’en retirer une.</p>
+
+<h2 id="questions">Questions</h2>
+
+<h3>Le tirage est-il vraiment aléatoire ?</h3>
+<p>Un tirage ordinaire utilise le générateur de nombres aléatoires cryptographiquement sûr du système, sur votre appareil, si bien que chaque numéro ou nom
+encore en lice a exactement la même chance. Un tirage scellé tire ses valeurs de la recette ci-dessus : une clé produite par ce même
+générateur, mêlée au mot du public. L’app n’utilise jamais l’heure, vos touches ni rien d’autre pour choisir.</p>
+
+<h3>Puis-je désactiver l’animation de la cage ou les sons ?</h3>
+<p>Oui : dans les <strong>Réglages</strong> (la roue dentée, en haut à gauche), désactivez l’animation ou <strong>Son et retour haptique</strong>. Le
+réglage de l’animation se trouve aussi dans les options sous le bouton Tirer. Avec Réduire les animations activé, les résultats apparaissent aussitôt,
+et le commutateur de sonnerie l’emporte toujours sur les sons.</p>
+
+<h3>Que sont les suppléants ?</h3>
+<p>Avec Tirage Pro, une seule touche peut tirer plusieurs gagnants puis des suppléants, tous différents. Si un gagnant ne peut pas
+participer, les suppléants prennent le relais, dans l’ordre où ils ont été tirés.</p>
+
+<h3>Que fait « Exclure les anciens gagnants » ?</h3>
+<p>Quiconque a gagné un tirage précédent à partir de la même liste enregistrée, ou de la même plage de numéros, reste à l’écart du tirage
+suivant. Les suppléants ne comptent pas comme gagnants, et une liste qui n’a pas été enregistrée n’est jamais comparée aux autres listes.
+Quand tout le monde a déjà gagné, l’app le dit et propose d’inclure de nouveau les anciens gagnants.</p>
+
+<h3>Qu’est-ce que la grille de numéros ?</h3>
+<p>Une grille de 10 à 1000 numéros (à partir de 1 ou de 00). Touchez un numéro pour noter qui l’a ; touchez
+<strong>Tirer parmi les numéros pris</strong> pour tirer un gagnant. Un numéro déjà tiré ne participe plus,
+ce qui permet de tirer plusieurs numéros à la suite. Effacer l’historique ne modifie pas la grille. La grille n’est qu’un relevé :
+l’app n’a pas de lots, ne manipule pas d’argent et n’attribue aucun prix. S’il y a des lots, respectez la loi de votre pays.</p>
+
+<h3>Qu’est-ce qui est gratuit, et qu’est-ce que Tirage Pro ?</h3>
+<p>Gratuit : tirages de numéros dans n’importe quelle plage, tirages de noms dans une liste (avec tickets), ordre, équipes, tirages scellés avec leur
+certificat, vérification de n’importe quel certificat, la cage, l’affichage pour la salle et le tirage en cours.
+<strong>Tirage Pro</strong> (un seul paiement, sans abonnement) ajoute plusieurs gagnants et suppléants en une touche, l’exclusion des anciens
+gagnants, les listes enregistrées, le Père Noël secret, la grille de numéros, l’historique avec date, heure et code, et le partage des résultats en image ou
+en PDF (la grille en image). Les options qui nécessitent Pro affichent une marque PRO ; les onglets Grille et Historique montrent un exemple et un bouton Tirage Pro
+jusque-là.</p>
+
+<h3>J’ai payé mais c’est toujours verrouillé</h3>
+<p>Ouvrez les <strong>Réglages</strong> (la roue dentée, en haut à gauche) et touchez <strong>Restaurer l’achat</strong>, connecté avec le
+compte Apple avec lequel vous avez acheté.</p>
+
+<h3>Puis-je obtenir un remboursement ?</h3>
+<p>Les remboursements sont gérés par Apple : <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>.</p>
+
+<h3>Quelles données Tirage collecte-t-il ?</h3>
+<p>Aucune. La <a href="privacy.html">page de confidentialité</a> indique ce qui reste sur votre appareil et les rares moments où l’app se connecte à Internet.</p>
+
+<h2 id="contact">Contact</h2>
+<p>Écrivez à <a href="mailto:hayriodabas@gmail.com">hayriodabas@gmail.com</a> en indiquant le modèle de votre appareil et ce que vous étiez en train de faire.</p>
+</main>
+<footer>
+  <p class="langs"><span>Autres langues:</span> <a href="../en-US/support.html" lang="en">English</a> <a href="../de-DE/support.html" lang="de">Deutsch</a> <a href="../es-ES/support.html" lang="es">Español</a> <a href="../it/support.html" lang="it">Italiano</a> <a href="../pt-BR/support.html" lang="pt-BR">Português (Brasil)</a> <a href="../nl-NL/support.html" lang="nl">Nederlands</a> <a href="../ja/support.html" lang="ja">日本語</a> <a href="../ko/support.html" lang="ko">한국어</a> <a href="../zh-Hans/support.html" lang="zh-Hans">简体中文</a> <a href="../ru/support.html" lang="ru">Русский</a> <a href="../tr/support.html" lang="tr">Türkçe</a></p>
+  <p class="stamp">Mis à jour le 24 novembre 2026 · Tirage au sort : Numéros · app.klarwerk.raffle</p>
+</footer>
+</body>
+</html>

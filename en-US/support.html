@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raffle · Help</title>
+<meta name="description" content="How to seal a draw, how to check one, and answers to common questions.">
+<link rel="stylesheet" href="../raffle.css">
+</head>
+<body>
+<header class="masthead">
+  <p class="mark"><span class="seal" aria-hidden="true"></span>Raffle</p>
+  <h1>Help</h1>
+  <p class="lede">How to seal a draw, how to check one, and answers to common questions.</p>
+  <nav class="tabs"><a href="support.html" aria-current="page">Help</a> <a href="privacy.html">Privacy</a></nav>
+</header>
+<main>
+<p class="intro">Raffle draws numbers from a range and names from a list, shuffles a list into an order and deals it into teams.
+What it adds to an ordinary draw is the <strong>sealed draw</strong>: you seal the draw before it happens, and afterwards anyone
+can check that the result was not chosen by hand. Everything works offline and without an account.</p>
+
+<h2 id="sealed">A sealed draw, in four steps</h2>
+<p>Under the Draw button, <strong>Seal this draw</strong> fixes the range or the list and the rules (winners and reserves per
+round, or the number of teams) and shows a <strong>seal</strong> of twelve characters, such as <code>K7QF-2M9X-TR4B</code>.
+Sealing and checking are free.</p>
+<ol class="steps">
+  <li><strong>Show the seal first.</strong> Read it out, hold the phone up or tap <strong>Send the seal</strong>. Nothing has been
+      drawn yet.</li>
+  <li><strong>Take a word from the room.</strong> Ask someone else for any word or number, type it under
+      <strong>Word from the room</strong> and tap <strong>Use this word</strong>. It is mixed into the draw. You can draw without
+      a word, but then the certificate shows less (see below).</li>
+  <li><strong>Draw.</strong> The result is marked with a small seal. <strong>Certificate</strong> opens the record of the draw;
+      <strong>Send the certificate</strong> shares it as plain text.</li>
+  <li><strong>Anyone checks.</strong> In Raffle, open the menu (top right) or Settings and choose <strong>Check a draw</strong>,
+      then paste the certificate and tap <strong>Check</strong>. The app works out the seal and the result again and answers
+      <strong>It holds</strong> or <strong>It does not hold</strong>. The last step is yours: compare the seal with the one you were
+      shown before the draw.</li>
+</ol>
+<p>While a draw is sealed, the list, the range and the rules cannot be changed; editing asks first and takes the seal off.
+Numbers and names are drawn round after round under one seal; a sealed order and sealed teams are drawn once.
+<strong>Skip earlier winners</strong> does not apply to a sealed draw: its pool is exactly what the seal covers.</p>
+
+<h3>What a certificate proves, and what it cannot</h3>
+<p>If the seal was shown <em>before</em> the word was chosen, and someone other than the organiser chose the word, nobody could
+know or steer the result: the organiser did not know the word when sealing, and the others did not know the key. Without a word,
+a certificate only shows that the list, the rules and the result were not changed after sealing. Raffle cannot tell who chose the
+word or when the seal was shown; the people present can.</p>
+<p>A certificate contains the whole list it was drawn from. Send it only to people who may see those names.</p>
+
+<h3 id="recipe">Checking by hand: the recipe</h3>
+<p>A certificate carries everything needed: the key (32 hex digits), the word, the rules, and the range or every entry.
+Version 1 of the recipe:</p>
+<ul class="recipe">
+  <li><strong>Seal:</strong> SHA-256 over these lines joined by line feeds: <code>raffle-seal-v1</code>, the key, the kind
+      (<code>numbers</code>, <code>names</code>, <code>order</code>, <code>teams</code>), <code>winners=W</code>,
+      <code>reserves=R</code>, <code>teams=T</code>, then <code>range=A..B</code> or one line per entry:
+      tickets, a tab, the name. Each of the first twelve bytes <em>b</em> becomes the character at position <em>b</em> mod 32 of
+      <code>ABCDEFGHJKLMNPQRSTUVWXYZ23456789</code>.</li>
+  <li><strong>Random values:</strong> block <em>i</em> of round <em>r</em> (both from 0) is HMAC-SHA256 with the key bytes over
+      <code>raffle-draw-v1</code>, the word, <em>r</em> and <em>i</em>, joined by line feeds; each block is cut into four
+      big-endian 64-bit values. An index below <em>n</em>: take the next value <em>v</em>; if <em>v</em> is below
+      2<sup>64</sup> mod <em>n</em> take another; otherwise the index is <em>v</em> mod <em>n</em>.</li>
+  <li><strong>Numbers:</strong> list the numbers not drawn yet in ascending order; for pick <em>i</em> (from 0) swap position
+      <em>i</em> with position <em>i</em> + index(below what is left from <em>i</em>); the picks are the first positions.
+      Ranges above 200,000 numbers: lower bound + index(below the count), taken again if already drawn.</li>
+  <li><strong>Names:</strong> a ticket index below the tickets still in play; walk the list subtracting each entry’s tickets
+      until it fits; that entry comes out with all its tickets.</li>
+  <li><strong>Order:</strong> the same swaps as for numbers over the whole list. <strong>Teams:</strong> that order dealt
+      round-robin into the teams.</li>
+</ul>
+
+<h2 id="everyday">Everyday draws</h2>
+<ul>
+  <li><strong>Numbers:</strong> tap the range (1 – 100 at first) to change it, then tap <strong>Draw</strong>.
+      Each number comes out only once until you tap <strong>New draw</strong>.</li>
+  <li><strong>Names:</strong> pick <strong>Names</strong> among the chips under the title, tap <strong>Add names</strong> and type
+      or paste one name per line. Numbering such as “1.” or “2)” and dashes from a chat are removed, and a name that appears
+      twice counts once. Tap <strong>Done</strong>, then <strong>Draw</strong>.</li>
+  <li><strong>Order</strong> puts the whole list in one random order, first to last. <strong>Teams</strong> deals the list into
+      two to twenty teams of even size; set the count under the Draw button.</li>
+  <li><strong>Show to the room</strong> (the arrows at the top right) puts the result full screen on a dark ground, with Draw at
+      the bottom for the next one.</li>
+  <li>Everything drawn so far stays on screen, in order, until you start a new draw. Each result has its date, its time and a
+      six-letter <strong>draw code</strong> worked out from the time and the contents: two cards with the same code show the same
+      draw, and a card whose list was edited afterwards no longer matches.</li>
+</ul>
+
+<h3>Tickets: more chances for one name</h3>
+<p>In the name list, end a line with <code>x3</code> (after a space) to give that name three tickets in a names draw, from 2 to
+99. A name with more tickets is more likely to come out, and still comes out only once. Order, Teams and Secret pairs count
+everyone once.</p>
+
+<h3 id="pairs">Secret pairs</h3>
+<p>With Raffle Pro, choose <strong>Secret pairs</strong> and tap <strong>Draw the pairs</strong>: everyone on the list draws someone
+else, and nobody draws themselves. Then pass the phone round. Each person taps their own name, taps <strong>Show my match</strong>,
+reads it, and hides it again before passing the phone on. The list shows who has looked. The organiser can open every pair from
+the menu (the app warns first) or draw again. The pairs stay on the phone until a new draw replaces them and never enter the
+history.</p>
+<p>Before drawing, <strong>Keep two people apart</strong> adds a rule that two people never draw each other, in either direction:
+partners, siblings, last year’s match. If the rules leave no way to pair everyone, the app says so and asks you to remove one.</p>
+
+<h2 id="questions">Questions</h2>
+
+<h3>Is the draw really random?</h3>
+<p>An ordinary draw uses the system’s cryptographically secure random number generator, on your device, so each number or name
+still in the draw has exactly the same chance. A sealed draw takes its values from the recipe above: a key made by that same
+generator, mixed with the word from the room. The app never uses the time of day, your taps or anything else to pick.</p>
+
+<h3>Can I turn the cage animation or the sounds off?</h3>
+<p>Yes: in <strong>Settings</strong> (the gear, top left) switch off the animation or <strong>Sound and haptics</strong>. The
+animation switch is also in the options under the Draw button. With Reduce Motion on, results appear at once, and the silent
+switch always wins over the sounds.</p>
+
+<h3>What are reserves?</h3>
+<p>With Raffle Pro one tap can draw several winners and then reserves, all different. If a winner cannot take
+part, the reserves step in, in the order they were drawn.</p>
+
+<h3>What does “Skip earlier winners” do?</h3>
+<p>Whoever won an earlier draw from the same saved list, or from the same number range, stays out of the next
+draw. Reserves are not counted as winners, and a list that has not been saved is never compared with other lists.
+When everyone has already won, the app says so and offers to include earlier winners again.</p>
+
+<h3>What is the number board?</h3>
+<p>A grid of 10 to 1000 numbers (starting at 1 or at 00). Tap a number to note who has it; tap
+<strong>Draw among taken numbers</strong> to draw a winner. A number that has been drawn does not take part again,
+so you can draw several numbers in turn. Deleting the history does not change the board. The board is only a record:
+the app has no prices, handles no money and awards no prizes. If there are prizes, follow the law in your country.</p>
+
+<h3>What is free, and what is Raffle Pro?</h3>
+<p>Free: number draws from any range, name draws from a list (with tickets), order, teams, sealed draws with their
+certificate, checking any certificate, the cage, the room view and the draw so far.
+<strong>Raffle Pro</strong> (one payment, no subscription) adds several winners and reserves in one tap, skipping earlier
+winners, saved lists, secret pairs, the number board, the history with date, time and code, and sharing results as an image or
+PDF (the board as an image). Options that need Pro show a PRO mark; the Board and History tabs show a sample and a Raffle Pro
+button until then.</p>
+
+<h3>I paid but it is still locked</h3>
+<p>Open <strong>Settings</strong> (the gear, top left) and tap <strong>Restore Purchase</strong>, signed in with the
+Apple Account you bought with.</p>
+
+<h3>Can I get a refund?</h3>
+<p>Refunds are handled by Apple: <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>.</p>
+
+<h3>What data does Raffle collect?</h3>
+<p>None. The <a href="privacy.html">privacy page</a> lists what stays on your device and the few moments the app goes online.</p>
+
+<h2 id="contact">Contact</h2>
+<p>Write to <a href="mailto:hayriodabas@gmail.com">hayriodabas@gmail.com</a> with your device model and what you were doing.</p>
+</main>
+<footer>
+  <p class="langs"><span>Other languages:</span> <a href="../de-DE/support.html" lang="de">Deutsch</a> <a href="../fr-FR/support.html" lang="fr">Français</a> <a href="../es-ES/support.html" lang="es">Español</a> <a href="../it/support.html" lang="it">Italiano</a> <a href="../pt-BR/support.html" lang="pt-BR">Português (Brasil)</a> <a href="../nl-NL/support.html" lang="nl">Nederlands</a> <a href="../ja/support.html" lang="ja">日本語</a> <a href="../ko/support.html" lang="ko">한국어</a> <a href="../zh-Hans/support.html" lang="zh-Hans">简体中文</a> <a href="../ru/support.html" lang="ru">Русский</a> <a href="../tr/support.html" lang="tr">Türkçe</a></p>
+  <p class="stamp">Updated 24 November 2026 · Raffle: Random Number Draw · app.klarwerk.raffle</p>
+</footer>
+</body>
+</html>

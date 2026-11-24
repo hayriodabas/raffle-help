@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auslosung · Hilfe</title>
+<meta name="description" content="So versiegelst du eine Ziehung, so prüfst du eine, und Antworten auf häufige Fragen.">
+<link rel="stylesheet" href="../raffle.css">
+</head>
+<body>
+<header class="masthead">
+  <p class="mark"><span class="seal" aria-hidden="true"></span>Auslosung</p>
+  <h1>Hilfe</h1>
+  <p class="lede">So versiegelst du eine Ziehung, so prüfst du eine, und Antworten auf häufige Fragen.</p>
+  <nav class="tabs"><a href="support.html" aria-current="page">Hilfe</a> <a href="privacy.html">Datenschutz</a></nav>
+</header>
+<main>
+<p class="intro">Auslosung zieht Zahlen aus einem Bereich und Namen aus einer Liste, mischt eine Liste zu einer Reihenfolge und teilt sie auf Teams auf.
+Was es einer gewöhnlichen Ziehung voraushat, ist die <strong>versiegelte Ziehung</strong>: Du versiegelst die Ziehung, bevor sie stattfindet, und danach
+kann jeder prüfen, dass das Ergebnis nicht von Hand ausgesucht wurde. Alles funktioniert offline und ohne Konto.</p>
+
+<h2 id="sealed">Eine versiegelte Ziehung in vier Schritten</h2>
+<p>Unter der Taste „Ziehen“ legt <strong>Diese Ziehung versiegeln</strong> den Bereich oder die Liste und die Regeln fest (Gewinner und Nachrücker pro
+Runde oder die Anzahl der Teams) und zeigt ein <strong>Siegel</strong> aus zwölf Zeichen, zum Beispiel <code>K7QF-2M9X-TR4B</code>.
+Versiegeln und Prüfen sind kostenlos.</p>
+<ol class="steps">
+  <li><strong>Zuerst das Siegel zeigen.</strong> Lies es vor, halte das Telefon hoch oder tippe auf <strong>Siegel senden</strong>. Es ist noch nichts
+      gezogen worden.</li>
+  <li><strong>Ein Wort aus dem Raum holen.</strong> Bitte jemand anderen um ein beliebiges Wort oder eine Zahl, tippe es unter
+      <strong>Wort aus dem Raum</strong> ein und tippe auf <strong>Dieses Wort verwenden</strong>. Es fließt in die Ziehung ein. Du kannst auch ohne
+      Wort ziehen, aber dann zeigt der Nachweis weniger (siehe unten).</li>
+  <li><strong>Ziehen.</strong> Das Ergebnis ist mit einem kleinen Siegel gekennzeichnet. <strong>Nachweis</strong> öffnet das Protokoll der Ziehung;
+      <strong>Nachweis senden</strong> teilt es als reinen Text.</li>
+  <li><strong>Jeder prüft.</strong> Öffne in Auslosung das Menü (oben rechts) oder die Einstellungen und wähle <strong>Ziehung prüfen</strong>,
+      füge dann den Nachweis ein und tippe auf <strong>Prüfen</strong>. Die App berechnet Siegel und Ergebnis noch einmal und antwortet
+      <strong>Stimmt</strong> oder <strong>Stimmt nicht</strong>. Der letzte Schritt liegt bei dir: Vergleiche das Siegel mit dem, das dir
+      vor der Ziehung gezeigt wurde.</li>
+</ol>
+<p>Solange eine Ziehung versiegelt ist, lassen sich Liste, Bereich und Regeln nicht ändern; wer sie bearbeiten will, wird zuerst gefragt und das Siegel wird entfernt.
+Zahlen und Namen werden Runde für Runde unter einem Siegel gezogen; eine versiegelte Reihenfolge und versiegelte Teams werden einmal gezogen.
+<strong>Frühere Gewinner auslassen</strong> gilt nicht für eine versiegelte Ziehung: Ihr Pool ist genau das, was das Siegel abdeckt.</p>
+
+<h3>Was ein Nachweis belegt und was nicht</h3>
+<p>Wenn das Siegel gezeigt wurde, <em>bevor</em> das Wort gewählt wurde, und jemand anderes als der Veranstalter das Wort gewählt hat, konnte niemand
+das Ergebnis vorher kennen oder lenken: Der Veranstalter kannte das Wort beim Versiegeln nicht, und die anderen kannten den Schlüssel nicht. Ohne Wort
+zeigt ein Nachweis nur, dass Liste, Regeln und Ergebnis nach dem Versiegeln nicht verändert wurden. Auslosung kann nicht erkennen, wer das
+Wort gewählt oder wann das Siegel gezeigt wurde; das können nur die Anwesenden.</p>
+<p>Ein Nachweis enthält die ganze Liste, aus der gezogen wurde. Schicke ihn nur an Leute, die diese Namen sehen dürfen.</p>
+
+<h3 id="recipe">Von Hand prüfen: das Rezept</h3>
+<p>Ein Nachweis enthält alles Nötige: den Schlüssel (32 Hexadezimalstellen), das Wort, die Regeln und den Bereich oder jeden Eintrag.
+Version 1 des Rezepts:</p>
+<ul class="recipe">
+  <li><strong>Siegel:</strong> SHA-256 über diese Zeilen, durch Zeilenvorschübe verbunden: <code>raffle-seal-v1</code>, der Schlüssel, die Art
+      (<code>numbers</code>, <code>names</code>, <code>order</code>, <code>teams</code>), <code>winners=W</code>,
+      <code>reserves=R</code>, <code>teams=T</code>, dann <code>range=A..B</code> oder eine Zeile pro Eintrag:
+      Lose, ein Tabulator, der Name. Jedes der ersten zwölf Bytes <em>b</em> wird zu dem Zeichen an Position <em>b</em> mod 32 von
+      <code>ABCDEFGHJKLMNPQRSTUVWXYZ23456789</code>.</li>
+  <li><strong>Zufallswerte:</strong> Block <em>i</em> der Runde <em>r</em> (beide ab 0) ist HMAC-SHA256 mit den Schlüsselbytes über
+      <code>raffle-draw-v1</code>, das Wort, <em>r</em> und <em>i</em>, durch Zeilenvorschübe verbunden; jeder Block wird in vier
+      64-Bit-Werte im Big-Endian-Format zerlegt. Ein Index unter <em>n</em>: Nimm den nächsten Wert <em>v</em>; liegt <em>v</em> unter
+      2<sup>64</sup> mod <em>n</em>, nimm einen weiteren; sonst ist der Index <em>v</em> mod <em>n</em>.</li>
+  <li><strong>Zahlen:</strong> Liste die noch nicht gezogenen Zahlen aufsteigend auf; für die Ziehung <em>i</em> (ab 0) vertausche Position
+      <em>i</em> mit Position <em>i</em> + Index(unter dem, was ab <em>i</em> übrig ist); die gezogenen Zahlen sind die ersten Positionen.
+      Bereiche über 200.000 Zahlen: untere Grenze + Index(unter der Anzahl), erneut genommen, falls schon gezogen.</li>
+  <li><strong>Namen:</strong> ein Los-Index unter den noch im Spiel befindlichen Losen; gehe die Liste durch und ziehe jeweils die Lose des Eintrags ab,
+      bis der Index hineinpasst; dieser Eintrag kommt mit allen seinen Losen heraus.</li>
+  <li><strong>Reihenfolge:</strong> dieselben Vertauschungen wie bei den Zahlen über die ganze Liste. <strong>Teams:</strong> diese Reihenfolge, reihum
+      auf die Teams verteilt.</li>
+</ul>
+
+<h2 id="everyday">Alltägliche Ziehungen</h2>
+<ul>
+  <li><strong>Zahlen:</strong> Tippe auf den Bereich (zuerst 1 – 100), um ihn zu ändern, und tippe dann auf <strong>Ziehen</strong>.
+      Jede Zahl kommt nur einmal heraus, bis du auf <strong>Neu beginnen</strong> tippst.</li>
+  <li><strong>Namen:</strong> Wähle <strong>Namen</strong> bei den Chips unter dem Titel, tippe auf <strong>Namen hinzufügen</strong> und tippe
+      oder füge einen Namen pro Zeile ein. Nummerierungen wie „1.“ oder „2)“ und Striche aus einem Chat werden entfernt, und ein Name, der
+      doppelt vorkommt, zählt einmal. Tippe auf <strong>Fertig</strong>, dann auf <strong>Ziehen</strong>.</li>
+  <li><strong>Reihenfolge</strong> bringt die ganze Liste in eine zufällige Reihenfolge, vom Ersten bis zum Letzten. <strong>Teams</strong> teilt die Liste in
+      zwei bis zwanzig gleich große Teams auf; stelle die Anzahl unter der Taste „Ziehen“ ein.</li>
+  <li><strong>Für den Raum zeigen</strong> (die Pfeile oben rechts) zeigt das Ergebnis im Vollbild auf dunklem Grund, mit „Ziehen“ unten
+      für die nächste Ziehung.</li>
+  <li>Alles, was bisher gezogen wurde, bleibt der Reihe nach auf dem Bildschirm, bis du eine neue Ziehung beginnst. Jedes Ergebnis hat sein Datum, seine Uhrzeit und einen
+      sechsstelligen <strong>Ziehungscode</strong>, der aus Uhrzeit und Inhalt berechnet wird: Zwei Karten mit demselben Code zeigen dieselbe
+      Ziehung, und eine Karte, deren Liste nachträglich bearbeitet wurde, passt nicht mehr.</li>
+</ul>
+
+<h3>Lose: mehr Chancen für einen Namen</h3>
+<p>Beende in der Namensliste eine Zeile mit <code>x3</code> (nach einem Leerzeichen), um diesem Namen in einer Namensziehung drei Lose zu geben, von 2 bis
+99. Ein Name mit mehr Losen kommt wahrscheinlicher heraus, kommt aber trotzdem nur einmal heraus. Reihenfolge, Teams und Wichteln zählen
+jeden einmal.</p>
+
+<h3 id="pairs">Wichteln</h3>
+<p>Wähle mit Auslosung Pro <strong>Wichteln</strong> und tippe auf <strong>Lose ziehen</strong>: Jeder auf der Liste zieht jemand
+anderen, und niemand zieht sich selbst. Gib dann das Telefon herum. Jeder tippt auf den eigenen Namen, tippt auf <strong>Mein Los zeigen</strong>,
+liest es und verbirgt es wieder, bevor das Telefon weitergegeben wird. Die Liste zeigt, wer schon nachgesehen hat. Der Veranstalter kann jedes Paar über das Menü
+öffnen (die App warnt vorher) oder neu ziehen. Die Paare bleiben auf dem Telefon, bis eine neue Ziehung sie ersetzt, und gelangen nie in den
+Verlauf.</p>
+<p>Vor dem Ziehen fügt <strong>Zwei Personen trennen</strong> eine Regel hinzu, dass zwei Personen sich nie gegenseitig ziehen, in keiner Richtung:
+Partner, Geschwister, das Los vom letzten Jahr. Wenn die Regeln keine Möglichkeit lassen, alle zu paaren, sagt dir das die App und bittet dich, eine zu entfernen.</p>
+
+<h2 id="questions">Fragen</h2>
+
+<h3>Ist die Ziehung wirklich zufällig?</h3>
+<p>Eine gewöhnliche Ziehung nutzt den kryptografisch sicheren Zufallszahlengenerator des Systems auf deinem Gerät, sodass jede Zahl und jeder Name,
+die noch im Spiel sind, genau dieselbe Chance haben. Eine versiegelte Ziehung bezieht ihre Werte aus dem Rezept oben: ein Schlüssel, den derselbe
+Generator erzeugt, vermischt mit dem Wort aus dem Raum. Die App nutzt nie die Uhrzeit, deine Berührungen oder irgendetwas anderes, um auszuwählen.</p>
+
+<h3>Kann ich die Käfig-Animation oder die Töne ausschalten?</h3>
+<p>Ja: Schalte in den <strong>Einstellungen</strong> (dem Zahnrad oben links) die Animation oder <strong>Ton und Haptik</strong> aus. Der
+Schalter für die Animation ist auch in den Optionen unter der Taste „Ziehen“. Bei eingeschalteter Reduzierung von Bewegung erscheinen Ergebnisse sofort,
+und der Stummschalter hat immer Vorrang vor den Tönen.</p>
+
+<h3>Was sind Nachrücker?</h3>
+<p>Mit Auslosung Pro kann ein Tipp mehrere Gewinner und danach Nachrücker ziehen, alle verschieden. Kann ein Gewinner nicht
+teilnehmen, rücken die Nachrücker in der Reihenfolge nach, in der sie gezogen wurden.</p>
+
+<h3>Was bewirkt „Frühere Gewinner auslassen“?</h3>
+<p>Wer eine frühere Ziehung aus derselben gespeicherten Liste oder demselben Zahlenbereich gewonnen hat, bleibt bei der nächsten
+Ziehung außen vor. Nachrücker zählen nicht als Gewinner, und eine Liste, die nicht gespeichert wurde, wird nie mit anderen Listen verglichen.
+Haben schon alle gewonnen, sagt die App das und bietet an, frühere Gewinner wieder einzubeziehen.</p>
+
+<h3>Was ist die Tafel?</h3>
+<p>Ein Raster aus 10 bis 1000 Nummern (beginnend bei 1 oder bei 00). Tippe auf eine Nummer, um zu vermerken, wer sie hat; tippe auf
+<strong>Unter vergebenen Nummern ziehen</strong>, um einen Gewinner zu ziehen. Eine gezogene Nummer nimmt nicht noch einmal teil,
+sodass du nacheinander mehrere Nummern ziehen kannst. Das Löschen des Verlaufs ändert die Tafel nicht. Die Tafel ist nur eine Aufzeichnung:
+Die App hat keine Preise, wickelt kein Geld ab und vergibt keine Gewinne. Wenn es Preise gibt, halte dich an das Gesetz deines Landes.</p>
+
+<h3>Was ist kostenlos, und was ist Auslosung Pro?</h3>
+<p>Kostenlos: Zahlenziehungen aus jedem Bereich, Namensziehungen aus einer Liste (mit Losen), Reihenfolge, Teams, versiegelte Ziehungen mit ihrem
+Nachweis, die Prüfung jedes Nachweises, der Käfig, die Raumansicht und die bisherige Ziehung.
+<strong>Auslosung Pro</strong> (eine Zahlung, kein Abo) bringt mehrere Gewinner und Nachrücker mit einem Tipp, das Auslassen früherer
+Gewinner, gespeicherte Listen, Wichteln, die Tafel, den Verlauf mit Datum, Uhrzeit und Code sowie das Teilen von Ergebnissen als Bild oder
+PDF (die Tafel als Bild). Optionen, die Pro brauchen, zeigen ein PRO-Zeichen; die Tabs Tafel und Verlauf zeigen bis dahin ein Beispiel und eine Schaltfläche
+„Auslosung Pro“.</p>
+
+<h3>Ich habe bezahlt, aber es ist immer noch gesperrt</h3>
+<p>Öffne die <strong>Einstellungen</strong> (das Zahnrad oben links) und tippe auf <strong>Kauf wiederherstellen</strong>, angemeldet mit der
+Apple-Account, mit der du gekauft hast.</p>
+
+<h3>Kann ich eine Rückerstattung bekommen?</h3>
+<p>Rückerstattungen übernimmt Apple: <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>.</p>
+
+<h3>Welche Daten sammelt Auslosung?</h3>
+<p>Keine. Die <a href="privacy.html">Datenschutzseite</a> listet auf, was auf deinem Gerät bleibt und die wenigen Momente, in denen die App online geht.</p>
+
+<h2 id="contact">Kontakt</h2>
+<p>Schreib an <a href="mailto:hayriodabas@gmail.com">hayriodabas@gmail.com</a> mit deinem Gerätemodell und dem, was du gerade gemacht hast.</p>
+</main>
+<footer>
+  <p class="langs"><span>Andere Sprachen:</span> <a href="../en-US/support.html" lang="en">English</a> <a href="../fr-FR/support.html" lang="fr">Français</a> <a href="../es-ES/support.html" lang="es">Español</a> <a href="../it/support.html" lang="it">Italiano</a> <a href="../pt-BR/support.html" lang="pt-BR">Português (Brasil)</a> <a href="../nl-NL/support.html" lang="nl">Nederlands</a> <a href="../ja/support.html" lang="ja">日本語</a> <a href="../ko/support.html" lang="ko">한국어</a> <a href="../zh-Hans/support.html" lang="zh-Hans">简体中文</a> <a href="../ru/support.html" lang="ru">Русский</a> <a href="../tr/support.html" lang="tr">Türkçe</a></p>
+  <p class="stamp">Stand: 24. November 2026 · Auslosung: Zahlen &amp; Namen · app.klarwerk.raffle</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raffle · Help</title>
+<link rel="stylesheet" href="raffle.css">
+<script>
+(function () {
+  var have = ["en-US", "de-DE", "fr-FR", "es-ES", "it", "pt-BR", "nl-NL", "ja", "ko", "zh-Hans", "ru", "tr"];
+  var wanted = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "en"]);
+  for (var i = 0; i < wanted.length; i++) {
+    var w = String(wanted[i]).toLowerCase();
+    for (var j = 0; j < have.length; j++) {
+      var h = have[j];
+      if (w === h.toLowerCase() || w.split("-")[0] === h.toLowerCase().split("-")[0] && !(h === "zh-Hans" && /-(tw|hk|mo|hant)/.test(w))) {
+        location.replace(h + "/support.html");
+        return;
+      }
+    }
+  }
+})();
+</script>
+</head>
+<body>
+<header class="masthead">
+  <p class="mark"><span class="seal" aria-hidden="true"></span>Raffle</p>
+  <h1>Help</h1>
+</header>
+<main>
+<ul class="chooser">
+  <li><a href="en-US/support.html" lang="en">English</a></li>
+  <li><a href="de-DE/support.html" lang="de">Deutsch</a></li>
+  <li><a href="fr-FR/support.html" lang="fr">Français</a></li>
+  <li><a href="es-ES/support.html" lang="es">Español</a></li>
+  <li><a href="it/support.html" lang="it">Italiano</a></li>
+  <li><a href="pt-BR/support.html" lang="pt-BR">Português (Brasil)</a></li>
+  <li><a href="nl-NL/support.html" lang="nl">Nederlands</a></li>
+  <li><a href="ja/support.html" lang="ja">日本語</a></li>
+  <li><a href="ko/support.html" lang="ko">한국어</a></li>
+  <li><a href="zh-Hans/support.html" lang="zh-Hans">简体中文</a></li>
+  <li><a href="ru/support.html" lang="ru">Русский</a></li>
+  <li><a href="tr/support.html" lang="tr">Türkçe</a></li>
+</ul>
+</main>
+</body>
+</html>

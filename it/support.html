@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estrazione · Aiuto</title>
+<meta name="description" content="Come sigillare un’estrazione, come verificarne una e le risposte alle domande più comuni.">
+<link rel="stylesheet" href="../raffle.css">
+</head>
+<body>
+<header class="masthead">
+  <p class="mark"><span class="seal" aria-hidden="true"></span>Estrazione</p>
+  <h1>Aiuto</h1>
+  <p class="lede">Come sigillare un’estrazione, come verificarne una e le risposte alle domande più comuni.</p>
+  <nav class="tabs"><a href="support.html" aria-current="page">Aiuto</a> <a href="privacy.html">Privacy</a></nav>
+</header>
+<main>
+<p class="intro">Estrazione estrae numeri da un intervallo e nomi da un elenco, mescola un elenco in un ordine e lo distribuisce in squadre.
+Quello che aggiunge a un’estrazione normale è l’<strong>estrazione sigillata</strong>: sigilli l’estrazione prima che avvenga e, dopo,
+chiunque può verificare che il risultato non è stato scelto a mano. Tutto funziona offline e senza account.</p>
+
+<h2 id="sealed">Un’estrazione sigillata, in quattro passaggi</h2>
+<p>Sotto il pulsante Estrai, <strong>Sigilla questa estrazione</strong> fissa l’intervallo o l’elenco e le regole (vincitori e riserve per
+turno, oppure il numero di squadre) e mostra un <strong>sigillo</strong> di dodici caratteri, come <code>K7QF-2M9X-TR4B</code>.
+Sigillare e verificare sono gratuiti.</p>
+<ol class="steps">
+  <li><strong>Mostra prima il sigillo.</strong> Leggilo ad alta voce, solleva il telefono o tocca <strong>Invia il sigillo</strong>. Non è ancora stato
+      estratto nulla.</li>
+  <li><strong>Prendi una parola dal pubblico.</strong> Chiedi a qualcun altro una parola o un numero qualsiasi, scrivilo sotto
+      <strong>Parola del pubblico</strong> e tocca <strong>Usa questa parola</strong>. Viene mescolata nell’estrazione. Puoi estrarre senza
+      parola, ma allora il certificato mostra meno (vedi sotto).</li>
+  <li><strong>Estrai.</strong> Il risultato è contrassegnato da un piccolo sigillo. <strong>Certificato</strong> apre il resoconto dell’estrazione;
+      <strong>Invia il certificato</strong> lo condivide come testo semplice.</li>
+  <li><strong>Chiunque verifica.</strong> In Estrazione, apri il menu (in alto a destra) o le Impostazioni e scegli <strong>Verifica un’estrazione</strong>,
+      poi incolla il certificato e tocca <strong>Verifica</strong>. L’app ricalcola il sigillo e il risultato e risponde
+      <strong>Tutto torna</strong> oppure <strong>Non torna</strong>. L’ultimo passaggio spetta a te: confronta il sigillo con quello che ti è stato
+      mostrato prima dell’estrazione.</li>
+</ol>
+<p>Finché un’estrazione è sigillata, l’elenco, l’intervallo e le regole non si possono modificare; modificarli chiede prima conferma e toglie il sigillo.
+Numeri e nomi vengono estratti turno dopo turno sotto un unico sigillo; un ordine sigillato e delle squadre sigillate vengono estratti una sola volta.
+<strong>Escludi vincitori precedenti</strong> non si applica a un’estrazione sigillata: il suo insieme è esattamente ciò che il sigillo copre.</p>
+
+<h3>Cosa dimostra un certificato e cosa non può dimostrare</h3>
+<p>Se il sigillo è stato mostrato <em>prima</em> che la parola venisse scelta, e a scegliere la parola è stato qualcuno diverso dall’organizzatore, nessuno poteva
+conoscere o pilotare il risultato: l’organizzatore non conosceva la parola al momento di sigillare, e gli altri non conoscevano la chiave. Senza una parola,
+un certificato mostra soltanto che l’elenco, le regole e il risultato non sono stati modificati dopo il sigillo. Estrazione non può sapere chi ha scelto la
+parola né quando è stato mostrato il sigillo; le persone presenti sì.</p>
+<p>Un certificato contiene l’intero elenco da cui è stato estratto. Invialo solo a persone che possono vedere quei nomi.</p>
+
+<h3 id="recipe">Verificare a mano: la ricetta</h3>
+<p>Un certificato contiene tutto il necessario: la chiave (32 cifre esadecimali), la parola, le regole e l’intervallo o ogni voce.
+Versione 1 della ricetta:</p>
+<ul class="recipe">
+  <li><strong>Sigillo:</strong> SHA-256 su queste righe unite da ritorni a capo: <code>raffle-seal-v1</code>, la chiave, il tipo
+      (<code>numbers</code>, <code>names</code>, <code>order</code>, <code>teams</code>), <code>winners=W</code>,
+      <code>reserves=R</code>, <code>teams=T</code>, poi <code>range=A..B</code> oppure una riga per voce:
+      biglietti, una tabulazione, il nome. Ciascuno dei primi dodici byte <em>b</em> diventa il carattere alla posizione <em>b</em> mod 32 di
+      <code>ABCDEFGHJKLMNPQRSTUVWXYZ23456789</code>.</li>
+  <li><strong>Valori casuali:</strong> il blocco <em>i</em> del turno <em>r</em> (entrambi a partire da 0) è HMAC-SHA256 con i byte della chiave su
+      <code>raffle-draw-v1</code>, la parola, <em>r</em> e <em>i</em>, uniti da ritorni a capo; ogni blocco viene suddiviso in quattro
+      valori a 64 bit in big-endian. Un indice minore di <em>n</em>: prendi il valore successivo <em>v</em>; se <em>v</em> è minore di
+      2<sup>64</sup> mod <em>n</em>, prendine un altro; altrimenti l’indice è <em>v</em> mod <em>n</em>.</li>
+  <li><strong>Numeri:</strong> elenca in ordine crescente i numeri non ancora estratti; per l’estrazione <em>i</em> (da 0) scambia la posizione
+      <em>i</em> con la posizione <em>i</em> + indice(minore di quanto resta a partire da <em>i</em>); i numeri estratti sono le prime posizioni.
+      Intervalli oltre 200.000 numeri: limite inferiore + indice(minore del conteggio), ripreso se già estratto.</li>
+  <li><strong>Nomi:</strong> un indice di biglietto minore dei biglietti ancora in gioco; scorri l’elenco sottraendo i biglietti di ogni voce
+      finché l’indice rientra; quella voce esce con tutti i suoi biglietti.</li>
+  <li><strong>Ordine:</strong> gli stessi scambi dei numeri, su tutto l’elenco. <strong>Squadre:</strong> quell’ordine distribuito
+      a turno nelle squadre.</li>
+</ul>
+
+<h2 id="everyday">Estrazioni di tutti i giorni</h2>
+<ul>
+  <li><strong>Numeri:</strong> tocca l’intervallo (all’inizio 1 – 100) per cambiarlo, poi tocca <strong>Estrai</strong>.
+      Ogni numero esce una sola volta finché non tocchi <strong>Nuova estrazione</strong>.</li>
+  <li><strong>Nomi:</strong> scegli <strong>Nomi</strong> tra i chip sotto il titolo, tocca <strong>Aggiungi nomi</strong> e scrivi
+      o incolla un nome per riga. Numerazioni come «1.» o «2)» e i trattini copiati da una chat vengono rimossi, e un nome che compare
+      due volte conta una sola volta. Tocca <strong>Fine</strong>, poi <strong>Estrai</strong>.</li>
+  <li><strong>Ordine</strong> mette l’intero elenco in un ordine casuale, dal primo all’ultimo. <strong>Squadre</strong> distribuisce l’elenco in
+      da due a venti squadre di pari dimensione; imposta il numero sotto il pulsante Estrai.</li>
+  <li><strong>Mostra alla sala</strong> (le frecce in alto a destra) mostra il risultato a schermo intero su sfondo scuro, con Estrai in
+      basso per la successiva.</li>
+  <li>Tutto ciò che è stato estratto finora resta sullo schermo, in ordine, finché non inizi una nuova estrazione. Ogni risultato ha la sua data, la sua ora e un
+      <strong>codice di estrazione</strong> di sei lettere calcolato dall’ora e dal contenuto: due schede con lo stesso codice mostrano la stessa
+      estrazione, e una scheda il cui elenco è stato modificato in seguito non corrisponde più.</li>
+</ul>
+
+<h3>Biglietti: più possibilità per un nome</h3>
+<p>Nell’elenco dei nomi, termina una riga con <code>x3</code> (dopo uno spazio) per dare a quel nome tre biglietti in un’estrazione di nomi, da 2 a
+99. Un nome con più biglietti ha più probabilità di uscire, ma esce comunque una sola volta. Ordine, Squadre e Coppie segrete contano
+tutti una volta sola.</p>
+
+<h3 id="pairs">Coppie segrete</h3>
+<p>Con Estrazione Pro, scegli <strong>Coppie segrete</strong> e tocca <strong>Estrai le coppie</strong>: ognuno nell’elenco estrae qualcun
+altro, e nessuno estrae se stesso. Poi fai girare il telefono. Ognuno tocca il proprio nome, tocca <strong>Mostra il mio abbinamento</strong>,
+lo legge e lo nasconde di nuovo prima di passare il telefono. L’elenco mostra chi ha già guardato. L’organizzatore può aprire ogni coppia dal
+menu (l’app avvisa prima) oppure estrarre di nuovo. Le coppie restano sul telefono finché una nuova estrazione non le sostituisce e non entrano mai nella
+cronologia.</p>
+<p>Prima di estrarre, <strong>Separa due persone</strong> aggiunge una regola per cui due persone non si estraggono mai a vicenda, in nessuna delle due direzioni:
+partner, fratelli, l’abbinamento dell’anno scorso. Se le regole non lasciano alcun modo di abbinare tutti, l’app te lo dice e ti chiede di toglierne una.</p>
+
+<h2 id="questions">Domande</h2>
+
+<h3>L’estrazione è davvero casuale?</h3>
+<p>Un’estrazione normale usa il generatore di numeri casuali crittograficamente sicuro del sistema, sul tuo dispositivo, quindi ogni numero o nome
+ancora in gioco ha esattamente la stessa probabilità. Un’estrazione sigillata ricava i suoi valori dalla ricetta qui sopra: una chiave prodotta da quello stesso
+generatore, mescolata con la parola del pubblico. L’app non usa mai l’ora, i tuoi tocchi o altro per scegliere.</p>
+
+<h3>Posso disattivare l’animazione della gabbia o i suoni?</h3>
+<p>Sì: in <strong>Impostazioni</strong> (l’ingranaggio, in alto a sinistra) disattiva l’animazione o <strong>Suono e vibrazione</strong>. L’interruttore dell’animazione si trova anche nelle opzioni sotto il pulsante Estrai. Con Riduci movimento attivo, i risultati compaiono subito,
+e l’interruttore del silenzioso prevale sempre sui suoni.</p>
+
+<h3>Cosa sono le riserve?</h3>
+<p>Con Estrazione Pro un solo tocco può estrarre più vincitori e poi delle riserve, tutti diversi. Se un vincitore non può
+partecipare, subentrano le riserve, nell’ordine in cui sono state estratte.</p>
+
+<h3>Cosa fa «Escludi vincitori precedenti»?</h3>
+<p>Chi ha vinto un’estrazione precedente dalla stessa lista salvata, o dallo stesso intervallo di numeri, resta fuori dalla successiva
+estrazione. Le riserve non contano come vincitori, e una lista che non è stata salvata non viene mai confrontata con altre liste.
+Quando tutti hanno già vinto, l’app lo dice e offre di includere di nuovo i vincitori precedenti.</p>
+
+<h3>Cos’è il tabellone dei numeri?</h3>
+<p>Una griglia da 10 a 1000 numeri (a partire da 1 o da 00). Tocca un numero per annotare chi lo ha; tocca
+<strong>Estrai tra i numeri presi</strong> per estrarre un vincitore. Un numero già estratto non partecipa di nuovo,
+così puoi estrarre più numeri uno dopo l’altro. Cancellare la cronologia non modifica il tabellone. Il tabellone è solo un registro:
+l’app non ha premi, non gestisce denaro e non assegna premi. Se ci sono premi, rispetta la legge del tuo paese.</p>
+
+<h3>Cosa è gratuito e cos’è Estrazione Pro?</h3>
+<p>Gratuito: estrazioni di numeri da qualsiasi intervallo, estrazioni di nomi da un elenco (con biglietti), ordine, squadre, estrazioni sigillate con il loro
+certificato, verifica di qualsiasi certificato, la gabbia, la vista per la sala e l’estrazione in corso.
+<strong>Estrazione Pro</strong> (un unico pagamento, nessun abbonamento) aggiunge più vincitori e riserve con un solo tocco, l’esclusione dei vincitori
+precedenti, liste salvate, coppie segrete, il tabellone dei numeri, la cronologia con data, ora e codice, e la condivisione dei risultati come immagine o
+PDF (il tabellone come immagine). Le opzioni che richiedono Pro mostrano un contrassegno PRO; le schede Tabellone e Cronologia mostrano un esempio e un pulsante Estrazione Pro
+fino ad allora.</p>
+
+<h3>Ho pagato ma è ancora bloccato</h3>
+<p>Apri le <strong>Impostazioni</strong> (l’ingranaggio, in alto a sinistra) e tocca <strong>Ripristina acquisto</strong>, con l’accesso
+all’Apple Account con cui hai acquistato.</p>
+
+<h3>Posso ottenere un rimborso?</h3>
+<p>I rimborsi sono gestiti da Apple: <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>.</p>
+
+<h3>Quali dati raccoglie Estrazione?</h3>
+<p>Nessuno. La <a href="privacy.html">pagina sulla privacy</a> elenca cosa resta sul tuo dispositivo e i pochi momenti in cui l’app si collega a internet.</p>
+
+<h2 id="contact">Contatti</h2>
+<p>Scrivi a <a href="mailto:hayriodabas@gmail.com">hayriodabas@gmail.com</a> indicando il modello del tuo dispositivo e cosa stavi facendo.</p>
+</main>
+<footer>
+  <p class="langs"><span>Altre lingue:</span> <a href="../en-US/support.html" lang="en">English</a> <a href="../de-DE/support.html" lang="de">Deutsch</a> <a href="../fr-FR/support.html" lang="fr">Français</a> <a href="../es-ES/support.html" lang="es">Español</a> <a href="../pt-BR/support.html" lang="pt-BR">Português (Brasil)</a> <a href="../nl-NL/support.html" lang="nl">Nederlands</a> <a href="../ja/support.html" lang="ja">日本語</a> <a href="../ko/support.html" lang="ko">한국어</a> <a href="../zh-Hans/support.html" lang="zh-Hans">简体中文</a> <a href="../ru/support.html" lang="ru">Русский</a> <a href="../tr/support.html" lang="tr">Türkçe</a></p>
+  <p class="stamp">Aggiornato il 24 novembre 2026 · Estrazione: Numeri e Nomi · app.klarwerk.raffle</p>
+</footer>
+</body>
+</html>

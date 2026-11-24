@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>抽签 · 帮助</title>
+<meta name="description" content="如何封印一次抽取、如何核对，以及常见问题的解答。">
+<link rel="stylesheet" href="../raffle.css">
+</head>
+<body>
+<header class="masthead">
+  <p class="mark"><span class="seal" aria-hidden="true"></span>抽签</p>
+  <h1>帮助</h1>
+  <p class="lede">如何封印一次抽取、如何核对，以及常见问题的解答。</p>
+  <nav class="tabs"><a href="support.html" aria-current="page">帮助</a> <a href="privacy.html">隐私</a></nav>
+</header>
+<main>
+<p class="intro">抽签可以从一个范围里抽取数字，从一份名单里抽取名字，也可以把名单随机排成一个顺序，或者分成若干小组。
+与普通抽取不同的是<strong>封印抽取</strong>：在抽取之前先封印，之后任何人都可以核对，结果并不是人为挑选的。
+所有功能都可以离线使用，也不需要账号。</p>
+
+<h2 id="sealed">封印抽取，分四步</h2>
+<p>在抽取按钮下方点按<strong>封印这次抽取</strong>，范围或名单以及规则(每一轮的中选者和候补人数，或者小组数量)就会被固定下来，并显示一个由十二个字符组成的<strong>封印</strong>，例如 <code>K7QF-2M9X-TR4B</code>。
+封印和核对都是免费的。</p>
+<ol class="steps">
+  <li><strong>先出示封印。</strong>把它念出来，举起手机给大家看，或者点按<strong>发送封印</strong>。此时还什么都没有抽。</li>
+  <li><strong>请现场的人说一个词。</strong>请别人随便说一个词或数字，输入到<strong>现场的词</strong>中，然后点按<strong>使用这个词</strong>。这个词会被混入抽取过程。
+      你也可以不用词直接抽取，但那样证明里能显示的内容会少一些(见下文)。</li>
+  <li><strong>抽取。</strong>结果上会带有一个小小的封印标记。点按<strong>证明</strong>可以打开这次抽取的记录，
+      <strong>发送证明</strong>则会把它以纯文本形式分享出去。</li>
+  <li><strong>任何人都可以核对。</strong>在抽签中打开菜单(右上角)或设置，选择<strong>核对抽取</strong>，然后粘贴证明并点按<strong>核对</strong>。
+      App 会重新计算封印和结果，并回答<strong>核对无误</strong>或<strong>核对不符</strong>。最后一步需要你自己完成：
+      把这个封印与抽取之前出示给你的封印比较一下。</li>
+</ol>
+<p>抽取处于封印状态时，名单、范围和规则都不能修改；要编辑时会先询问，并且会撤掉封印。
+数字和名字可以在同一个封印下一轮接一轮地抽取；封印的顺序和封印的分组只抽取一次。
+<strong>排除以前的中选者</strong>不适用于封印抽取：它的抽取范围正是封印所涵盖的内容。</p>
+
+<h3>证明能证明什么，又不能证明什么</h3>
+<p>如果封印是在选词<em>之前</em>出示的，并且词是由组织者以外的人选的，那么没有人能够预先知道或左右结果：
+组织者在封印时不知道这个词，而其他人不知道密钥。没有词的时候，证明只能说明名单、规则和结果在封印之后没有被改动过。
+抽签无法知道是谁选了词，也无法知道封印是什么时候出示的；这些在场的人知道。</p>
+<p>证明中包含抽取时所用的整份名单。只发送给有权看到这些名字的人。</p>
+
+<h3 id="recipe">手工核对：计算方法</h3>
+<p>证明里带有核对所需的一切：密钥(32 位十六进制数)、词、规则，以及范围或每一个条目。计算方法的第 1 版如下：</p>
+<ul class="recipe">
+  <li><strong>封印：</strong>对下列各行用换行符连接后的内容计算 SHA-256：<code>raffle-seal-v1</code>、密钥、类型(<code>numbers</code>、<code>names</code>、<code>order</code>、<code>teams</code>)、
+      <code>winners=W</code>、<code>reserves=R</code>、<code>teams=T</code>，然后是 <code>range=A..B</code>，或者每个条目一行：签数、制表符、名字。
+      前十二个字节中的每个值 <em>b</em>，换成 <code>ABCDEFGHJKLMNPQRSTUVWXYZ23456789</code> 中第 <em>b</em> mod 32 位的字符。</li>
+  <li><strong>随机值：</strong>第 <em>r</em> 轮的第 <em>i</em> 个数据块(都从 0 开始)，是以密钥字节为密钥的 HMAC-SHA256，
+      作用于用换行符连接的 <code>raffle-draw-v1</code>、词、<em>r</em> 和 <em>i</em>；每个数据块切成四个大端序 64 位数值。
+      要得到小于 <em>n</em> 的下标：取下一个数值 <em>v</em>；如果 <em>v</em> 小于 2<sup>64</sup> mod <em>n</em>，就再取一个；否则下标为 <em>v</em> mod <em>n</em>。</li>
+  <li><strong>数字：</strong>把尚未抽出的数字按升序排列；对于第 <em>i</em> 次抽取(从 0 开始)，把位置 <em>i</em> 与位置 <em>i</em> + index(小于从 <em>i</em> 起剩余的个数)交换；抽出的就是最前面的那些位置。
+      对于超过 200,000 个数字的范围：下限 + index(小于数字个数)，如果已经抽出过就重新取。</li>
+  <li><strong>名字：</strong>取一个小于仍在抽取中的签总数的签下标；沿着名单逐个减去每个条目的签数，直到落在某个条目里；该条目连同它的所有签一起被抽出。</li>
+  <li><strong>顺序：</strong>对整份名单做与数字相同的交换。<strong>分组：</strong>把这个顺序按轮流分发的方式分到各组。</li>
+</ul>
+
+<h2 id="everyday">日常抽取</h2>
+<ul>
+  <li><strong>数字：</strong>点按范围(起初是 1 – 100)来修改，然后点按<strong>抽取</strong>。
+      在你点按<strong>重新开始</strong>之前，每个数字只会出现一次。</li>
+  <li><strong>名字：</strong>在标题下方的标签中选择<strong>名字</strong>，点按<strong>添加名字</strong>，每行输入或粘贴一个名字。
+      “1.”“2)”之类的编号以及聊天中带来的破折号会被去掉，重复出现的名字只算一次。点按<strong>完成</strong>，再点按<strong>抽取</strong>。</li>
+  <li><strong>顺序</strong>会把整份名单随机排成一个顺序，从第一位到最后一位。<strong>分组</strong>会把名单平均分成两到二十个小组；小组数量在抽取按钮下方设置。</li>
+  <li><strong>全屏展示</strong>(右上角的箭头)会在深色背景上全屏显示结果，底部有抽取按钮，方便进行下一次。</li>
+  <li>到目前为止抽出的所有结果会按顺序保留在屏幕上，直到你重新开始。每个结果都有日期、时间，以及根据时间和内容算出的六个字母的<strong>抽取码</strong>：
+      抽取码相同的两张卡片表示同一次抽取，而名单事后被编辑过的卡片，抽取码就不再匹配。</li>
+</ul>
+
+<h3>签数：让一个名字有更多机会</h3>
+<p>在名单中，在某一行末尾(空一格之后)写上 <code>x3</code>，就可以让这个名字在名字抽取中拥有三张签，可设为 2 到 99。
+签越多的名字越容易被抽中，但仍然只会被抽中一次。顺序、分组和秘密配对中，每个人都只算一张。</p>
+
+<h3 id="pairs">秘密配对</h3>
+<p>使用抽签 Pro，选择<strong>秘密配对</strong>并点按<strong>抽取配对</strong>：名单上的每个人都会抽到另一个人，没有人会抽到自己。
+然后把手机传下去。每个人点按自己的名字，点按<strong>查看我的结果</strong>，看完后先隐藏起来，再把手机传给下一位。
+名单中会显示谁已经看过。组织者可以在菜单中打开所有配对(App 会先发出警告)，也可以重新抽取。
+配对会一直保存在手机上，直到被新的抽取取代，并且不会进入历史记录。</p>
+<p>抽取之前，<strong>让两个人不互抽</strong>可以添加一条规则：两个人永远不会互相抽到对方，不论哪个方向：
+伴侣、兄弟姐妹、去年抽到的人。如果这些规则让所有人都无法完成配对，App 会告诉你，并请你去掉其中一条。</p>
+
+<h2 id="questions">常见问题</h2>
+
+<h3>抽取真的是随机的吗？</h3>
+<p>普通抽取使用你设备上系统自带的密码学安全随机数生成器，因此仍在抽取中的每个数字或名字，机会完全相同。
+封印抽取的数值来自上面的计算方法：由同一个生成器产生的密钥，再混入现场的词。
+App 从不使用当前时间、你的点按动作或其他任何东西来做选择。</p>
+
+<h3>可以关闭抽签笼的动画或声音吗？</h3>
+<p>可以：在<strong>设置</strong>(左上角的齿轮)中关闭动画或<strong>声音与触感</strong>。
+动画开关在抽取按钮下方的选项里也有。开启“减弱动态效果”后，结果会立即出现；静音开关始终优先于声音。</p>
+
+<h3>候补是什么？</h3>
+<p>使用抽签 Pro，点按一次就可以抽出多位中选者，再抽出候补，彼此互不相同。如果某位中选者无法参加，候补就按抽出的顺序递补。</p>
+
+<h3>“排除以前的中选者”有什么作用？</h3>
+<p>在同一份已存名单或同一个数字范围的以前抽取中中选的人，不会参加下一次抽取。
+候补不算中选者，未保存的名单也不会与其他名单比较。
+如果所有人都已经中选过，App 会告知，并询问是否重新把以前的中选者包含进来。</p>
+
+<h3>号码表是什么？</h3>
+<p>一张包含 10 到 1000 个号码的表格(从 1 或 00 开始)。点按某个号码，记下谁拿了这个号码；
+点按<strong>从已认领号码中抽取</strong>来抽出中选者。已经抽出的号码不会再参加，所以可以接连抽出多个号码。
+删除历史记录不会改变号码表。号码表只是一份记录：App 不设奖金，不经手钱款，也不颁发奖品。如果有奖品，请遵守你所在国家的法律。</p>
+
+<h3>哪些功能免费，抽签 Pro 又是什么？</h3>
+<p>免费：任意范围的数字抽取，从名单中抽取名字(含签数)，顺序，分组，带证明的封印抽取，核对任何证明，抽签笼，全屏展示，以及到目前为止的抽取结果。
+<strong>抽签 Pro</strong>(一次付费，无需订阅)增加了一次点按抽出多位中选者和候补、排除以前的中选者、已存名单、秘密配对、号码表，
+带日期、时间和抽取码的历史记录，以及把结果分享为图片或 PDF(号码表为图片)。需要 Pro 的选项会显示 PRO 标记；在升级之前，号码表和历史记录标签页会显示示例以及抽签 Pro 按钮。</p>
+
+<h3>我已经付款了，但仍然是锁定状态</h3>
+<p>打开<strong>设置</strong>(左上角的齿轮)，使用购买时的 Apple 账户登录，然后点按<strong>恢复购买</strong>。</p>
+
+<h3>可以退款吗？</h3>
+<p>退款由 Apple 处理：<a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>。</p>
+
+<h3>抽签会收集哪些数据？</h3>
+<p>不收集任何数据。<a href="privacy.html">隐私页面</a>列出了哪些内容只保留在你的设备上，以及 App 联网的少数几个时刻。</p>
+
+<h2 id="contact">联系方式</h2>
+<p>请写信到 <a href="mailto:hayriodabas@gmail.com">hayriodabas@gmail.com</a>，并附上你的设备型号以及当时正在做什么。</p>
+</main>
+<footer>
+  <p class="langs"><span>其他语言:</span> <a href="../en-US/support.html" lang="en">English</a> <a href="../de-DE/support.html" lang="de">Deutsch</a> <a href="../fr-FR/support.html" lang="fr">Français</a> <a href="../es-ES/support.html" lang="es">Español</a> <a href="../it/support.html" lang="it">Italiano</a> <a href="../pt-BR/support.html" lang="pt-BR">Português (Brasil)</a> <a href="../nl-NL/support.html" lang="nl">Nederlands</a> <a href="../ja/support.html" lang="ja">日本語</a> <a href="../ko/support.html" lang="ko">한국어</a> <a href="../ru/support.html" lang="ru">Русский</a> <a href="../tr/support.html" lang="tr">Türkçe</a></p>
+  <p class="stamp">2026年11月24日更新 · 抽签：随机数字和名单抽取 · app.klarwerk.raffle</p>
+</footer>
+</body>
+</html>

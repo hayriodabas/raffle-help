@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kura Çekimi · Yardım</title>
+<meta name="description" content="Bir çekilişi nasıl mühürleyeceğiniz, nasıl doğrulayacağınız ve sık sorulan soruların yanıtları.">
+<link rel="stylesheet" href="../raffle.css">
+</head>
+<body>
+<header class="masthead">
+  <p class="mark"><span class="seal" aria-hidden="true"></span>Kura Çekimi</p>
+  <h1>Yardım</h1>
+  <p class="lede">Bir çekilişi nasıl mühürleyeceğiniz, nasıl doğrulayacağınız ve sık sorulan soruların yanıtları.</p>
+  <nav class="tabs"><a href="support.html" aria-current="page">Yardım</a> <a href="privacy.html">Gizlilik</a></nav>
+</header>
+<main>
+<p class="intro">Kura Çekimi bir aralıktan sayı, bir listeden isim çeker; bir listeyi rastgele bir sıraya dizer ve takımlara dağıtır.
+Sıradan bir çekilişe kattığı şey <strong>mühürlü çekiliş</strong>: çekilişi yapılmadan önce mühürlersiniz, sonrasında herkes
+sonucun elle seçilmediğini doğrulayabilir. Her şey çevrimdışı ve hesap açmadan çalışır.</p>
+
+<h2 id="sealed">Mühürlü çekiliş, dört adımda</h2>
+<p>Çek düğmesinin altındaki <strong>Bu çekilişi mühürle</strong>, aralığı ya da listeyi ve kuralları (her turdaki kazanan ve yedek sayısını
+ya da takım sayısını) sabitler ve <code>K7QF-2M9X-TR4B</code> gibi on iki karakterlik bir <strong>mühür</strong> gösterir.
+Mühürlemek ve doğrulamak ücretsizdir.</p>
+<ol class="steps">
+  <li><strong>Önce mührü gösterin.</strong> Yüksek sesle okuyun, telefonu havaya kaldırın ya da <strong>Mührü gönder</strong> düğmesine dokunun. Henüz hiçbir şey
+      çekilmedi.</li>
+  <li><strong>Salondan bir kelime alın.</strong> Başka birinden herhangi bir kelime ya da sayı isteyin, <strong>Salondan kelime</strong> alanına yazın ve
+      <strong>Bu kelimeyi kullan</strong> düğmesine dokunun. Kelime çekilişe karıştırılır. Kelimesiz de çekebilirsiniz, ama o zaman çekiliş belgesi
+      daha az şey gösterir (aşağıya bakın).</li>
+  <li><strong>Çekin.</strong> Sonuç küçük bir mühürle işaretlenir. <strong>Çekiliş belgesi</strong> çekilişin kaydını açar;
+      <strong>Belgeyi gönder</strong> onu düz metin olarak paylaşır.</li>
+  <li><strong>Herkes doğrulayabilir.</strong> Kura Çekimi'nde menüyü (sağ üstte) ya da Ayarlar'ı açın, <strong>Çekilişi doğrula</strong> satırını seçin,
+      ardından çekiliş belgesini yapıştırıp <strong>Doğrula</strong> düğmesine dokunun. Uygulama mührü ve sonucu yeniden hesaplar ve
+      <strong>Doğru çıktı</strong> ya da <strong>Doğru çıkmadı</strong> yanıtını verir. Son adım sizin: mührü, çekilişten önce size
+      gösterilen mühürle karşılaştırın.</li>
+</ol>
+<p>Bir çekiliş mühürlüyken liste, aralık ve kurallar değiştirilemez; düzenlemeye kalkarsanız önce sorulur ve mühür kaldırılır.
+Sayılar ve isimler tek bir mühür altında tur tur çekilir; mühürlü bir sıra ve mühürlü takımlar bir kez çekilir.
+<strong>Önceki kazananları hariç tut</strong> mühürlü çekilişte geçerli değildir: havuz tam olarak mührün kapsadığı şeydir.</p>
+
+<h3>Çekiliş belgesi neyi kanıtlar, neyi kanıtlayamaz</h3>
+<p>Mühür, kelime seçilmeden <em>önce</em> gösterildiyse ve kelimeyi organizatörden başka biri seçtiyse, sonucu kimse önceden bilemezdi, yönlendiremezdi:
+organizatör mühürlerken kelimeyi bilmiyordu, diğerleri de anahtarı bilmiyordu. Kelime yoksa çekiliş belgesi yalnızca listenin, kuralların ve sonucun
+mühürlendikten sonra değiştirilmediğini gösterir. Kura Çekimi kelimeyi kimin ve mührün ne zaman gösterildiğini bilemez;
+orada bulunanlar bilir.</p>
+<p>Çekiliş belgesi, çekilişin yapıldığı listenin tamamını içerir. Onu yalnızca bu isimleri görmesinde sakınca olmayan kişilere gönderin.</p>
+
+<h3 id="recipe">Elle doğrulama: tarif</h3>
+<p>Çekiliş belgesi gereken her şeyi taşır: anahtar (32 onaltılık basamak), kelime, kurallar ve aralık ya da tüm kayıtlar.
+Tarifin 1. sürümü:</p>
+<ul class="recipe">
+  <li><strong>Mühür:</strong> satır başı karakterleriyle birleştirilmiş şu satırların SHA-256'sı: <code>raffle-seal-v1</code>, anahtar, tür
+      (<code>numbers</code>, <code>names</code>, <code>order</code>, <code>teams</code>), <code>winners=W</code>,
+      <code>reserves=R</code>, <code>teams=T</code>, sonra <code>range=A..B</code> ya da her kayıt için bir satır:
+      bilet sayısı, bir sekme, isim. İlk on iki baytın her biri <em>b</em>, <code>ABCDEFGHJKLMNPQRSTUVWXYZ23456789</code> dizisinin
+      <em>b</em> mod 32. konumundaki karakter olur.</li>
+  <li><strong>Rastgele değerler:</strong> <em>r</em>. turun <em>i</em>. bloğu (ikisi de 0'dan başlar), anahtar baytlarıyla HMAC-SHA256'dır;
+      girdi olarak <code>raffle-draw-v1</code>, kelime, <em>r</em> ve <em>i</em> satır başı karakterleriyle birleştirilir; her blok dört
+      big-endian 64 bitlik değere bölünür. <em>n</em>'den küçük bir indeks için: sıradaki <em>v</em> değerini alın; <em>v</em>,
+      2<sup>64</sup> mod <em>n</em>'den küçükse bir değer daha alın; değilse indeks <em>v</em> mod <em>n</em>'dir.</li>
+  <li><strong>Sayılar:</strong> henüz çekilmemiş sayıları artan sırada dizin; <em>i</em>. seçim için (0'dan başlayarak) <em>i</em> konumunu,
+      <em>i</em> + index(<em>i</em>'den itibaren kalanın altında) konumuyla değiştirin; seçilenler ilk konumlardır.
+      200.000'den büyük aralıklarda: alt sınır + index(sayı adedinin altında), zaten çekilmişse yeniden alınır.</li>
+  <li><strong>İsimler:</strong> hâlâ çekilişte olan biletlerin altında bir bilet indeksi alın; listede ilerleyip her kaydın biletlerini çıkarın,
+      indeks bir kayda sığana kadar; o kayıt tüm biletleriyle birlikte çıkar.</li>
+  <li><strong>Sıra:</strong> sayılardakiyle aynı değişimler, listenin tamamı üzerinde. <strong>Takımlar:</strong> bu sıranın takımlara
+      sırayla (round-robin) dağıtılması.</li>
+</ul>
+
+<h2 id="everyday">Günlük çekilişler</h2>
+<ul>
+  <li><strong>Sayılar:</strong> aralığa dokunup değiştirin (başlangıçta 1 – 100), sonra <strong>Çek</strong> düğmesine dokunun.
+      <strong>Yeni çekiliş</strong> düğmesine dokunana kadar her sayı yalnızca bir kez çıkar.</li>
+  <li><strong>İsimler:</strong> başlığın altındaki seçeneklerden <strong>İsimler</strong> seçeneğini seçin, <strong>İsim ekle</strong> düğmesine dokunun ve satır başına bir isim
+      yazın ya da yapıştırın. “1.” veya “2)” gibi numaralar ve sohbetten gelen tireler silinir, iki kez geçen isim
+      bir kez sayılır. önce <strong>Bitti</strong>, sonra <strong>Çek</strong> düğmesine dokunun.</li>
+  <li><strong>Sıra</strong>, listenin tamamını ilkten sona rastgele bir sıraya koyar. <strong>Takımlar</strong> listeyi eşit büyüklükte
+      iki ila yirmi takıma dağıtır; sayıyı Çek düğmesinin altından ayarlayın.</li>
+  <li><strong>Salona göster</strong> (sağ üstteki oklar) sonucu koyu bir zemin üzerinde tam ekran gösterir; bir sonraki çekiliş için altta Çek düğmesi durur.</li>
+  <li>Şimdiye kadar çekilen her şey, yeni bir çekilişe başlayana kadar sırayla ekranda kalır. Her sonucun tarihi, saati ve
+      zamandan ve içerikten hesaplanan altı harfli bir <strong>çekiliş kodu</strong> vardır: aynı koda sahip iki kart aynı
+      çekilişi gösterir, listesi sonradan düzenlenen kartın kodu ise artık tutmaz.</li>
+</ul>
+
+<h3>Biletler: bir isme daha çok şans</h3>
+<p>İsim listesinde bir satırın sonuna (bir boşluktan sonra) <code>x3</code> yazarsanız, o isme isim çekilişinde üç bilet verilir; 2 ile
+99 arasında olabilir. Bileti çok olan isim daha olası çıkar, yine de yalnızca bir kez çıkar. Sıra, Takımlar ve Gizli eşleşmede herkes
+bir kez sayılır.</p>
+
+<h3 id="pairs">Gizli eşleşme</h3>
+<p>Kura Çekimi Pro ile <strong>Gizli eşleşme</strong> seçeneğini seçip <strong>Eşleri çek</strong> düğmesine dokunun: listedeki herkes bir başkasını çeker,
+kimse kendini çekmez. Sonra telefonu elden ele dolaştırın. Herkes kendi adına dokunur, <strong>Eşimi göster</strong> düğmesine dokunur,
+okur ve telefonu vermeden önce yeniden gizler. Liste, kimin baktığını gösterir. Organizatör tüm eşleşmeleri
+menüden açabilir (uygulama önce uyarır) ya da yeniden çekebilir. Eşleşmeler, yenisi onların yerini alana kadar telefonda kalır ve
+geçmişe hiç girmez.</p>
+<p>Çekmeden önce <strong>İki kişiyi ayrı tut</strong>, iki kişinin hiçbir yönde birbirini çekmemesini sağlayan bir kural ekler:
+eşler, kardeşler, geçen yılın eşleşmesi. Kurallar herkesi eşleştirmeye yer bırakmıyorsa uygulama bunu söyler ve birini kaldırmanızı ister.</p>
+
+<h2 id="questions">Sorular</h2>
+
+<h3>Çekiliş gerçekten rastgele mi?</h3>
+<p>Sıradan bir çekiliş, cihazınızda sistemin kriptografik olarak güvenli rastgele sayı üretecini kullanır; böylece çekilişte kalan her sayı
+ya da isim tamamen aynı şansa sahiptir. Mühürlü bir çekiliş değerlerini yukarıdaki tariften alır: aynı üretecin yaptığı bir anahtar,
+salondan gelen kelimeyle karıştırılır. Uygulama seçim için günün saatini, dokunuşlarınızı ya da başka hiçbir şeyi kullanmaz.</p>
+
+<h3>Kafes animasyonunu ya da sesleri kapatabilir miyim?</h3>
+<p>Evet: <strong>Ayarlar</strong>'da (sol üstteki dişli) animasyonu ya da <strong>Ses ve dokunsal</strong> ayarını kapatın.
+Animasyon anahtarı Çek düğmesinin altındaki seçeneklerde de var. Hareketi Azalt açıkken sonuçlar hemen görünür
+ve sessiz anahtarı her zaman seslerin önüne geçer.</p>
+
+<h3>Yedekler nedir?</h3>
+<p>Kura Çekimi Pro ile tek dokunuşta birkaç kazanan, ardından yedekler çekilebilir; hepsi farklı kişilerdir. Bir kazanan katılamazsa
+yedekler, çekildikleri sırayla devreye girer.</p>
+
+<h3>“Önceki kazananları hariç tut” ne yapar?</h3>
+<p>Aynı kayıtlı listeden ya da aynı sayı aralığından yapılan önceki bir çekilişi kazanan, bir sonraki
+çekilişin dışında kalır. Yedekler kazanan sayılmaz ve kaydedilmemiş bir liste başka listelerle asla karşılaştırılmaz.
+Herkes zaten kazanmışsa uygulama bunu söyler ve önceki kazananları yeniden dahil etmeyi önerir.</p>
+
+<h3>Sayı tablosu nedir?</h3>
+<p>10 ila 1000 sayıdan oluşan bir ızgara (1'den ya da 00'dan başlar). Bir sayıya dokunup onu kimin aldığını not edin;
+<strong>Alınan numaralardan çek</strong> düğmesine dokunarak bir kazanan çekin. Çekilmiş bir sayı bir daha katılmaz,
+böylece art arda birkaç sayı çekebilirsiniz. Geçmişi silmek tabloyu değiştirmez. Tablo yalnızca bir kayıttır:
+uygulamada ödül yoktur, para işlemi yapmaz ve ödül vermez. Ödüller varsa ülkenizdeki yasaları izleyin.</p>
+
+<h3>Neler ücretsiz, Kura Çekimi Pro nedir?</h3>
+<p>Ücretsiz: herhangi bir aralıktan sayı çekilişi, bir listeden isim çekilişi (biletlerle), sıra, takımlar, çekiliş belgeli mühürlü çekilişler,
+herhangi bir çekiliş belgesini doğrulama, kafes, salon görünümü ve şimdiye kadarki çekilişler.
+<strong>Kura Çekimi Pro</strong> (tek ödeme, abonelik yok) tek dokunuşta birkaç kazanan ve yedek, önceki kazananları hariç tutma, kayıtlı listeler,
+gizli eşleşme, sayı tablosu, tarih, saat ve kodlu geçmiş, ve sonuçları görsel ya da PDF olarak paylaşma (tablo görsel olarak) özelliklerini ekler.
+Pro gerektiren seçeneklerde PRO işareti görünür; Tablo ve Geçmiş sekmeleri o zamana kadar bir örnek ve bir Kura Çekimi Pro düğmesi gösterir.</p>
+
+<h3>Ödeme yaptım ama hâlâ kilitli</h3>
+<p><strong>Ayarlar</strong>'ı (sol üstteki dişli) açın ve satın aldığınız Apple Hesabı ile oturum açmış olarak
+<strong>Satın almayı geri yükle</strong> düğmesine dokunun.</p>
+
+<h3>İade alabilir miyim?</h3>
+<p>İadeleri Apple yürütür: <a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>.</p>
+
+<h3>Kura Çekimi hangi verileri toplar?</h3>
+<p>Hiçbirini. <a href="privacy.html">Gizlilik sayfası</a>, cihazınızda nelerin kaldığını ve uygulamanın internete çıktığı birkaç anı listeler.</p>
+
+<h2 id="contact">İletişim</h2>
+<p>Cihaz modelinizi ve o sırada ne yaptığınızı belirterek <a href="mailto:hayriodabas@gmail.com">hayriodabas@gmail.com</a> adresine yazın.</p>
+</main>
+<footer>
+  <p class="langs"><span>Diğer diller:</span> <a href="../en-US/support.html" lang="en">English</a> <a href="../de-DE/support.html" lang="de">Deutsch</a> <a href="../fr-FR/support.html" lang="fr">Français</a> <a href="../es-ES/support.html" lang="es">Español</a> <a href="../it/support.html" lang="it">Italiano</a> <a href="../pt-BR/support.html" lang="pt-BR">Português (Brasil)</a> <a href="../nl-NL/support.html" lang="nl">Nederlands</a> <a href="../ja/support.html" lang="ja">日本語</a> <a href="../ko/support.html" lang="ko">한국어</a> <a href="../zh-Hans/support.html" lang="zh-Hans">简体中文</a> <a href="../ru/support.html" lang="ru">Русский</a></p>
+  <p class="stamp">24 Kasım 2026 tarihinde güncellendi · Kura Çekimi: Sayı ve İsim · app.klarwerk.raffle</p>
+</footer>
+</body>
+</html>

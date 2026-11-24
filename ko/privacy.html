@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>추첨 · 개인정보 보호</title>
+<meta name="description" content="추첨 앱이 무엇을 어디에 보관하는지, 그리고 무엇을 절대 보내지 않는지 안내합니다.">
+<link rel="stylesheet" href="../raffle.css">
+</head>
+<body>
+<header class="masthead">
+  <p class="mark"><span class="seal" aria-hidden="true"></span>추첨</p>
+  <h1>개인정보 보호</h1>
+  <p class="lede">추첨 앱이 무엇을 어디에 보관하는지, 그리고 무엇을 절대 보내지 않는지 안내합니다.</p>
+  <nav class="tabs"><a href="support.html">도움말</a> <a href="privacy.html" aria-current="page">개인정보 보호</a></nav>
+</header>
+<main>
+<p class="intro">추첨: 번호 뽑기와 이름 뽑기는 사람들 앞에서 추첨을 진행하면서 그들에 관한 어떤 정보도 어딘가로 보내지 않도록 만들어졌습니다.
+이 페이지는 앱에만 해당하며(번들 <code>app.klarwerk.raffle</code>), 아래에 적힌 날짜를 기준으로 합니다.</p>
+
+<h2>요약</h2>
+<table class="facts">
+  <tr><th>계정 또는 로그인</th><td>없습니다. 앱은 이름, 이메일 주소, 전화번호를 묻지 않습니다.</td></tr>
+  <tr><th>권한</th><td>없습니다. 연락처, 사진, 카메라, 마이크, 위치, 알림을 사용하지 않습니다.</td></tr>
+  <tr><th>분석, 광고, 추적</th><td>없습니다. 어떤 종류의 서드파티 코드도 앱에 들어 있지 않습니다.</td></tr>
+  <tr><th>목록이 저장되는 곳</th><td>사용자의 기기에만 있습니다.</td></tr>
+  <tr><th>온라인에 접속할 때</th><td>Apple의 앱 내 구입(StoreKit)을 이용할 때와 이 페이지로 연결되는 링크를 열 때뿐입니다.</td></tr>
+</table>
+
+<h2>기기에 남는 것</h2>
+<p>입력한 이름과 범위, 지금까지의 추첨 결과, 저장된 목록, 비밀 짝, 번호판, 기록, 봉인 추첨의 키는 앱 전용 저장 공간 안의 파일 하나에 보관됩니다.
+몇 가지 작은 값(마지막으로 사용한 모드와 탭, 완료한 추첨 횟수, 추첨 Pro 사용 가능 여부)은 앱의 환경설정에 보관됩니다.
+이 중 어떤 것도 개발자나 서버로 전송되지 않습니다. 다른 앱의 데이터와 마찬가지로, 이 파일은 사용자가 직접 설정한 기기 백업(iCloud 또는 컴퓨터)에 포함될 수 있습니다.</p>
+<p>삭제하려면: <strong>설정 › 기록 삭제</strong>로 기록을 지울 수 있고, 앱을 삭제하면 앱이 저장한 모든 것이 삭제됩니다.</p>
+
+<h2>기기 밖으로 나가는 것, 그것도 사용자가 선택할 때만</h2>
+<ul>
+  <li><strong>공유.</strong> 결과, 봉인, 증명서, 이미지, PDF는 사용자가 보내기나 복사를 누를 때에만, 시스템 공유 시트나 클립보드를 통해, 사용자가 고른 곳으로만 앱 밖으로 나갑니다. 증명서에는 추첨에 사용한 목록 전체가 들어 있습니다.</li>
+  <li><strong>붙여넣기.</strong> 추첨을 확인할 때 앱은 사용자가 시스템의 붙여넣기 버튼을 누를 때에만 클립보드를 읽습니다.</li>
+  <li><strong>구입.</strong> 추첨 Pro는 Apple이 StoreKit으로 처리하는 일회성 구입입니다. 앱은 사용자의 Apple 계정에서 구입이 유효한지만 알 수 있고, 결제 정보는 Apple이 관리합니다.</li>
+  <li><strong>평가.</strong> 추첨을 몇 번 마치면 앱이 iOS에 Apple의 표준 평가 요청 창을 표시해 달라고 요청할 수 있습니다. 표시 여부는 iOS가 결정하며, 평가는 Apple로 전송됩니다.</li>
+  <li><strong>이 페이지들.</strong> 도움말과 개인정보 보호 링크는 브라우저에서 열립니다. 페이지는 GitHub Pages에서 호스팅되며, 다른 웹 호스트와 마찬가지로 요청을 받습니다. 개발자는 누가 페이지를 열었는지 알 수 없습니다.</li>
+</ul>
+
+<h2>어린이</h2>
+<p>추첨은 교실에서도 쓰입니다. 아무것도 수집하지 않으므로 어린이에게서도 아무것도 수집하지 않습니다. 채팅도 프로필도 없고, 앱이 누군가에게 연락할 방법도 없습니다.</p>
+
+<h2>변경 사항과 문의</h2>
+<p>앱이 데이터를 다르게 처리하게 되면 그 버전을 출시하기 전에 이 페이지를 바꾸고 아래 날짜를 갱신합니다. 문의: <a href="mailto:hayriodabas@gmail.com">hayriodabas@gmail.com</a>. 개발자: Hayri Odabaş.</p>
+</main>
+<footer>
+  <p class="langs"><span>다른 언어:</span> <a href="../en-US/privacy.html" lang="en">English</a> <a href="../de-DE/privacy.html" lang="de">Deutsch</a> <a href="../fr-FR/privacy.html" lang="fr">Français</a> <a href="../es-ES/privacy.html" lang="es">Español</a> <a href="../it/privacy.html" lang="it">Italiano</a> <a href="../pt-BR/privacy.html" lang="pt-BR">Português (Brasil)</a> <a href="../nl-NL/privacy.html" lang="nl">Nederlands</a> <a href="../ja/privacy.html" lang="ja">日本語</a> <a href="../zh-Hans/privacy.html" lang="zh-Hans">简体中文</a> <a href="../ru/privacy.html" lang="ru">Русский</a> <a href="../tr/privacy.html" lang="tr">Türkçe</a></p>
+  <p class="stamp">2026년 11월 24일 업데이트 · 추첨: 번호 뽑기와 이름 뽑기 · app.klarwerk.raffle</p>
+</footer>
+</body>
+</html>
